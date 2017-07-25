@@ -1,0 +1,3 @@
+*.class
+/Event Logger/build
+/Event Logger/dist
