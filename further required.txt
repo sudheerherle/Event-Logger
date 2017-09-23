@@ -1,0 +1,7 @@
+change text in the event logger from cap size
+detection point EF - CF
+train counts in event logger
+progress bar
+
+
+

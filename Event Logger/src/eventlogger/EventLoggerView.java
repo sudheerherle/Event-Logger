@@ -286,7 +286,7 @@ public class EventLoggerView extends FrameView {
     } 
     public boolean com_connect(String port){
         boolean retval = false;
-        try {
+//        try {
                 controlAllButtons(false);
                 sh.disconnect();
                 sharedData.connected = false;
@@ -301,7 +301,8 @@ public class EventLoggerView extends FrameView {
                 }
                 else ports[0] = port;                
                 for(int p = 0; p< ports.length;p++){
-                GiveResponse("Connecting to port for the first time. Please wait...", Color.blue);                
+                GiveResponse("Connecting to port for the first time. Please wait...", Color.blue);  
+                try{
                 if(sh.connect(ports[p], 9600)){
                     GiveResponse("Connected to "+port, Color.BLUE);
                     sharedData.connected = true;
@@ -317,14 +318,16 @@ public class EventLoggerView extends FrameView {
                     }else{
                         retval = false;
                     }                    
-                } 
+                } }catch(IOException ex){
+                    
+                }
                 }
                 
-        } catch (IOException ex) {
-            retval = false;
-            sharedData.connected = false;
-            GiveResponse("Port was not found or in use...", Color.red);
-        }
+//        } catch (IOException ex) {
+//            retval = false;
+//            sharedData.connected = false;
+//            GiveResponse("Port was not found or in use...", Color.red);
+//        }
         controlAllButtons(true);
         return retval;
     }
@@ -2305,11 +2308,11 @@ private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             break;
                 
             case 2:
-            unit_type_txt = "CF";
+            unit_type_txt = "EF";
             break;
                 
             case 3:
-            unit_type_txt = "EF";
+            unit_type_txt = "CF";
             break;
                 
             case 4:
