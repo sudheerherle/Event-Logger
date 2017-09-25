@@ -154,7 +154,7 @@ public class SharedData
     public void dataRecieved(byte[] buffer) { 
         int count =0;
         if(buffer[1] ==0){
-            
+            dataRecievedFlag = true;
             count  = (buffer.length-5)/19;
             for(int h=0;h<count*19;h=h+19){
             byte[] buf = new byte[19];
@@ -194,7 +194,7 @@ public class SharedData
             event_list.add(ed);  
             }
             SharedData.getSingletonObject().dataRecievedFlag = true;
-            EventLoggerApp.getApplication().getView().UpdateEventList();
+            EventLoggerApp.getApplication().getView().UpdateEventList("All");
         }
         DF_recieved = new DataFrame();
         DF_recieved.CPU_address = buffer[0];

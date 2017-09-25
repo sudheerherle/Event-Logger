@@ -45,6 +45,8 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.TableCellRenderer;
@@ -110,6 +112,7 @@ public class EventLoggerView extends FrameView {
     private Timer timeout_timer = new Timer();
     private boolean Stop_Updating = false;
     private String Network_ID="NA";
+    private int percent = 0;
     
       
     public EventLoggerView(SingleFrameApplication app) {
@@ -399,17 +402,10 @@ private void prepareChart(){
             //Logger.getLogger(SimpleSerialPort.class.getName()).log(Level.SEVERE, null, ex);
         }
         return retval;
-    }
-     
+    }     
         
-        
-    private void controlAllButtons(boolean b) {
-        if(b==false){
-            progressBar.setIndeterminate(true);
-        }
-        else{
-           progressBar.setIndeterminate(false);
-        }
+    void Buttons(boolean b, boolean progress){
+        progressBar.setIndeterminate(progress);
         BtnConnect.setEnabled(b);
         jTabbedPane1.setEnabledAt(0,b);
         jTabbedPane1.setEnabledAt(1,b);
@@ -429,7 +425,16 @@ private void prepareChart(){
         jButton7.setEnabled(b);
         jButton8.setEnabled(b);
         TblData.setEnabled(b);
-        BtnEraseEventsinLogger.setEnabled(b);
+        BtnEraseEventsinLogger.setEnabled(b);  
+    }  
+    private void controlAllButtons(boolean b) {
+        if(b==false){
+            progressBar.setIndeterminate(true);
+        }
+        else{
+           progressBar.setIndeterminate(false);
+        }
+       Buttons(b,!b);
      }
     private int get_size_of_packet(int cmd){
         int size =0;
@@ -675,6 +680,8 @@ private void prepareChart(){
         jButton7 = new javax.swing.JButton();
         jButton8 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
+        jLabel17 = new javax.swing.JLabel();
+        cpuselectCmbBx = new javax.swing.JComboBox();
         jPanel8 = new javax.swing.JPanel();
         BtnEraseEventsinLogger = new javax.swing.JButton();
         jLabel9 = new javax.swing.JLabel();
@@ -1410,16 +1417,31 @@ private void prepareChart(){
             }
         });
 
+        jLabel17.setText(resourceMap.getString("jLabel17.text")); // NOI18N
+        jLabel17.setName("jLabel17"); // NOI18N
+
+        cpuselectCmbBx.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All", "CPU-1", "CPU-2" }));
+        cpuselectCmbBx.setName("cpuselectCmbBx"); // NOI18N
+        cpuselectCmbBx.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cpuselectCmbBxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
         jPanel7Layout.setHorizontalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel7Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 820, Short.MAX_VALUE)
-                    .addComponent(jPanel14, javax.swing.GroupLayout.DEFAULT_SIZE, 820, Short.MAX_VALUE)
-                    .addComponent(jButton4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 820, Short.MAX_VALUE)
+                    .addComponent(jPanel14, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 820, Short.MAX_VALUE)
+                    .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel7Layout.createSequentialGroup()
+                        .addComponent(jLabel17)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cpuselectCmbBx, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel7Layout.setVerticalGroup(
@@ -1428,7 +1450,11 @@ private void prepareChart(){
                 .addContainerGap()
                 .addComponent(jPanel14, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel17)
+                    .addComponent(cpuselectCmbBx, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(5, 5, 5))
@@ -1767,7 +1793,7 @@ private void prepareChart(){
 
             public void run()
             {
-                controlAllButtons(false);
+                Buttons(false,false);
                 sharedData.event_list.clear();
                 DataFrame df = new DataFrame();
                 df.CPU_address =cpu_Addrs;
@@ -1777,10 +1803,9 @@ private void prepareChart(){
                 df.data[1] = 0;
                 SendPacketRecieveResponse(df);   
                 jTabbedPane1.setSelectedIndex(4);
-                controlAllButtons(true);
-                
-            }
-            });
+                Buttons(true,false);
+                }
+                  });
             get_events.start();     
         
     }//GEN-LAST:event_BtnDownloadEventsActionPerformed
@@ -1798,10 +1823,11 @@ private void prepareChart(){
         if(i==0) return "--";
         else return Long.toString(i,10);
     }
-    public void UpdateEventList(){
+    public void UpdateEventList(String cpu){
         
         lblStatus.setText("Updating the table. Please wait...");
         lblStatus.setForeground(Color.BLUE);
+        percent = 0;
         TblData.setAutoResizeMode(TblData.AUTO_RESIZE_OFF);
         tabHandle.removeAllRows();
         //tabHandle.removeAllColumns();        
@@ -1822,7 +1848,8 @@ private void prepareChart(){
          TableColumnAdjustment tca = new TableColumnAdjustment( TblData);
         tca.setDynamicAdjustment(true);  
         Stop_Updating = false;
-        controlAllButtons(false);
+//        controlAllButtons(false);
+        lblStatus.setForeground(Color.BLUE);
         for(int i =0; i<total_events;i++){
             EventDetails ed = event_list.get(i);
             StringToDisplay[0] = ed.Station_Name;
@@ -1840,14 +1867,13 @@ private void prepareChart(){
             StringToDisplay[8] = getString(ed.DS_REV_Axle_Count);
             StringToDisplay[9] = getString(ed.US_REV_Axle_Count);
             StringToDisplay[10] = "--";
-            tabHandle.addRows(StringToDisplay);            
-            if(i==0) progressBar.setValue(0);
-            else progressBar.setValue((i*100)/total_events);
-//            try {
-//                Thread.sleep(20);
-//            } catch (InterruptedException ex) {
-//                Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
-//            }  
+            if(cpu.equals("All"))
+                tabHandle.addRows(StringToDisplay);
+            else if(cpu.equals(StringToDisplay[2]))
+                tabHandle.addRows(StringToDisplay);            
+            if(i==0) percent =0;
+            else percent = (i*100)/total_events;            
+            new AnswerWorker(percent).execute();
             if(Stop_Updating){
                 break;
             }
@@ -1855,14 +1881,36 @@ private void prepareChart(){
         GiveResponse("Logged events have been populated.", Color.BLUE);
         controlAllButtons(true);
         progressBar.setValue(0); 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
-        }        
+//        try {
+//            Thread.sleep(1000);
+//        } catch (InterruptedException ex) {
+//            Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
+//        }        
 //        TableColumnAdjustment tca = new TableColumnAdjustment( TblData);
 //        tca.adjustColumns();        
     }
+    
+    class AnswerWorker extends SwingWorker<Integer, Integer>
+{
+    private int percent = 0;
+    public AnswerWorker(int percent) {
+        this.percent = percent;
+    }
+        
+    protected Integer doInBackground() throws Exception
+    {
+        progressBar.setValue(percent);
+        lblStatus.setText("Updating the table: "+ percent + "% complete... Please wait.");
+        lblStatus.setBackground(Color.BLUE);
+        return percent;
+    }
+
+    protected void done()
+    {
+        
+    }
+    }
+    
     public void resizeColumnWidth(JTable table) {
     final TableColumnModel columnModel = table.getColumnModel();
     for (int column = 0; column < table.getColumnCount(); column++) {
@@ -2077,6 +2125,21 @@ private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 }
 
 }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+private void cpuselectCmbBxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cpuselectCmbBxActionPerformed
+    final String cpu = (String) cpuselectCmbBx.getSelectedItem();
+    Thread te = new Thread(new Runnable() {
+
+    public void run()
+    {
+        Buttons(false,false);
+        UpdateEventList(cpu);
+        Buttons(true,false);
+    }
+    });
+    te.start();
+    
+}//GEN-LAST:event_cpuselectCmbBxActionPerformed
 
     public boolean ExportPDF(String path){
         
@@ -2357,6 +2420,7 @@ private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JTable TblData;
     public javax.swing.JPanel connection_indicator_panel;
     public javax.swing.JPanel connection_indicator_panel1;
+    private javax.swing.JComboBox cpuselectCmbBx;
     private javax.swing.JLabel datelbl;
     private javax.swing.JTextField dpField;
     private javax.swing.JButton jButton1;
@@ -2376,6 +2440,7 @@ private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
