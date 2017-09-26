@@ -60,6 +60,7 @@ public class SharedData
     public Properties globalProps= null;
     public DataFrame DF_recieved;
     public boolean cleanInstall=false;
+    public boolean event_downloaded = false;
     public LinkedList<EventDetails> event_list = new LinkedList();
     int GET_LOGGED_EVENTS_Resp_Length 	= 19;
     int SET_RTC_DATE_AND_TIME_Resp_Length 	= 10;	  
