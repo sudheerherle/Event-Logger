@@ -403,7 +403,7 @@ public class EventLoggerView extends FrameView {
                 }
                 else ports[0] = port;                
                 for(int p = 0; p< ports.length;p++){
-                GiveResponse("Connecting to port for the first time. Please wait...", Color.blue);  
+                GiveResponse("Connecting to the event logger for the first time. Please wait...", Color.blue);  
                 try{
                 if(sh.connect(ports[p], 9600)){
                     GiveResponse("Connected to "+port, Color.BLUE);
@@ -424,12 +424,6 @@ public class EventLoggerView extends FrameView {
                     
                 }
                 }
-                
-//        } catch (IOException ex) {
-//            retval = false;
-//            sharedData.connected = false;
-//            GiveResponse("Port was not found or in use...", Color.red);
-//        }
         controlAllButtons(true);
         return retval;
     }
@@ -459,8 +453,6 @@ private void prepareChart(){
         JFreeChart chart3 = ChartFactory.createPieChart3D("SSDAC System Analysis", dataset, true, true, true);
         PiePlot3D plot3 = (PiePlot3D) chart3.getPlot();
         plot3.setDarkerSides(true);
-//        plot3.setBackgroundAlpha(0.1f);
-//        plot3.setBackgroundImage(mainLogo); 
         plot3.setForegroundAlpha(0.7f);        
         plot3.setCircular(true);
         jPanel17.add(new ChartPanel(chart3));
@@ -1881,6 +1873,8 @@ private void prepareChart(){
                 Buttons(false,true);
 //                tabHandle.removeAllRows();
                 model.data.clear();
+                model.fireTableDataChanged();
+                progressBar.setValue(0);
 //                model.removeTableModelListener(jTable1);
                 jTabbedPane1.setSelectedIndex(4);                
                 sharedData.event_list.clear();
@@ -1891,7 +1885,7 @@ private void prepareChart(){
                 df.data[0] = 100;
                 df.data[1] = 0;
                 SendPacketRecieveResponse(df);                
-                Buttons(true,false);
+//                Buttons(true,false);
                 }
                   });
             get_events.start();     
@@ -2045,7 +2039,7 @@ private void prepareChart(){
             else percent = (i*100)/total_events;            
 //            new AnswerWorker(percent).execute();
             progressBar.setValue(percent);
-            Thread.sleep(10);
+//            Thread.sleep(10);
             lblStatus.setText("Updating the table: "+ percent + "% complete... Please wait.");
             lblStatus.setForeground(Color.BLUE);
             Thread.yield();
