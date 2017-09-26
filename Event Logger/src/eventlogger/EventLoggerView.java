@@ -1935,7 +1935,7 @@ private void prepareChart(){
         }
          TableColumnAdjustment tca = new TableColumnAdjustment( jTable1);
         tca.setDynamicAdjustment(true);  
-        tca.setColumnHeaderIncluded(true);
+        tca.setColumnHeaderIncluded(false);
         Stop_Updating = false;
 //        controlAllButtons(false);
         lblStatus.setForeground(Color.BLUE);
@@ -2133,11 +2133,11 @@ private void prepareChart(){
     }//GEN-LAST:event_usbActionPerformed
 
     private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
-//        try{
-//            TblData.print();
-//        }catch(PrinterException ex){
-//            JOptionPane.showMessageDialog(this.getFrame(), ex.getMessage(), "Print Error", JOptionPane.ERROR_MESSAGE);
-//        }               
+        try{
+            jTable1.print();
+        }catch(PrinterException ex){
+            JOptionPane.showMessageDialog(this.getFrame(), ex.getMessage(), "Print Error", JOptionPane.ERROR_MESSAGE);
+        }               
     }//GEN-LAST:event_jButton8ActionPerformed
 
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed

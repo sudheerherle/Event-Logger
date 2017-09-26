@@ -194,7 +194,8 @@ public class SharedData
             ed.CPU_Addrs = DF_recieved.CPU_address;
             event_list.add(ed);  
             }
-            SharedData.getSingletonObject().dataRecievedFlag = true;
+            dataRecievedFlag = true;
+            event_downloaded = true;
             EventLoggerApp.getApplication().getView().UpdateEventList("All");
         }
         DF_recieved = new DataFrame();
