@@ -223,7 +223,7 @@ public class SerialHelper implements Runnable , SerialPortEventListener {
                 shareddata.dataRecieved(recieved_data);                
                 shareddata.dataRecievedFlag = true;
                 
-                System.out.println("Recieved: "+Arrays.toString(recieved_data));
+//                System.out.println("Recieved: "+Arrays.toString(recieved_data));
             }
             catch ( IOException e )
             {

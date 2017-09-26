@@ -39,15 +39,23 @@
 
 package eventlogger;
 
+import eventlogger.EventLoggerView.RowData;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.JTable;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
 
-public class CTableHandler
+public class CTableHandler extends AbstractTableModel
 {
     private JTable jTable;
-    private DefaultTableModel tabModel;
+//    private DefaultTableModel tabModel;
+    private List<RowData> data;
+    private String[] columnNames = {"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Remote Forward","Local Reverse","Remote Reverse","Total Train Wheels"};
+    
 //    private ColorRenderer colorRender=null;
 //    private TableCellListener tableCellListener ;
     /**
@@ -58,11 +66,53 @@ public class CTableHandler
     public CTableHandler(JTable pjTable)
     {
         jTable=pjTable;
-        tabModel = new DefaultTableModel();
-        jTable.setModel(tabModel);
+//        tabModel = new DefaultTableModel();
+        data = new ArrayList<RowData>(25);
+//        jTable.setModel(tabModel);
 
     }
-     
+    
+//     @Override
+//        public Class<?> getColumnClass(int columnIndex) {
+//            return columnIndex == 0 ? Date.class : Integer.class;
+//        }
+
+        @Override
+        public String getColumnName(int col) {
+            return columnNames[col];
+        }
+
+        @Override
+        public int getColumnCount() {
+            return columnNames.length;
+        }
+
+        @Override
+        public int getRowCount() {
+            return data.size();
+        }
+
+        @Override
+        public Object getValueAt(int row, int col) {
+            RowData value = data.get(row);
+            return col == 0 ? value.getData() : value.getData();
+        }
+
+        public void addRow(RowData value) {
+            int rowCount = getRowCount();
+            data.add(value);
+            fireTableRowsInserted(rowCount, rowCount);
+        }
+
+        public void addRows(RowData... value) {
+            addRows(Arrays.asList(value));
+        }
+
+        public void addRows(List<RowData> rows) {
+            int rowCount = getRowCount();
+            data.addAll(rows);
+            fireTableRowsInserted(rowCount, getRowCount() - 1);
+        }
     public void setwidth(){
 
     }
@@ -72,21 +122,21 @@ public class CTableHandler
      * @param Stirng[] rowvalue
      * @return
     */
-    public void addRows(String[] rowValue)
-    {
-        if(rowValue.length==jTable.getColumnCount()){
-           // try{
-            tabModel.addRow(rowValue);
-
-//            }
-//            catch(Exception ex){
-//                System.out.println("Error in tabulating...");
-//            }
-            
-            //tabModel.setRowCount(jTable.getRowCount());
-        }
-         
-    }
+//    public void addRows(String[] rowValue)
+//    {
+//        if(rowValue.length==jTable.getColumnCount()){
+//           // try{
+//            tabModel.addRow(rowValue);
+//
+////            }
+////            catch(Exception ex){
+////                System.out.println("Error in tabulating...");
+////            }
+//            
+//            //tabModel.setRowCount(jTable.getRowCount());
+//        }
+//         
+//    }
 
     public void setCellEditor(){
 //        String [] ss = {"Dfaf","Dfaf"};
@@ -104,7 +154,7 @@ public class CTableHandler
     public void removeAllRows()//Table Rows
     {
         try{
-            tabModel.getDataVector().clear(); 
+//            tabModel.getDataVector().clear(); 
         }catch(Exception e){
             System.out.println("Removing Rows caused an Error!!.. ");
 
@@ -123,7 +173,7 @@ public class CTableHandler
       
     //    for(int ip=0;ip<colName.length;ip++)
 
-            tabModel.setColumnIdentifiers(colName);
+//            tabModel.setColumnIdentifiers(colName);
     }
 
     /**
@@ -140,8 +190,8 @@ public class CTableHandler
                    TableColumn tcol = jTable.getColumnModel().getColumn(c);
                    jTable.removeColumn(tcol);
             }
-            tabModel.getDataVector().removeAllElements();
-            tabModel.setColumnCount(0);
+//            tabModel.getDataVector().removeAllElements();
+//            tabModel.setColumnCount(0);
             jTable.removeAll();
             jTable.revalidate();
         }
