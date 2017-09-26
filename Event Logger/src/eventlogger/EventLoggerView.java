@@ -1499,7 +1499,7 @@ private void prepareChart(){
     jLabel17.setText(resourceMap.getString("jLabel17.text")); // NOI18N
     jLabel17.setName("jLabel17"); // NOI18N
 
-    cpuselectCmbBx.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All", "CPU-1", "CPU-2" }));
+    cpuselectCmbBx.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All", "CPU-1", "CPU-2", "CPU-3", "CPU-4", "CPU-5", "CPU-6", "CPU-7", "CPU-8" }));
     cpuselectCmbBx.setName("cpuselectCmbBx"); // NOI18N
     cpuselectCmbBx.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1995,25 +1995,7 @@ private void prepareChart(){
             return this.data;
         }
     }
-    class AnswerWorker extends SwingWorker<Integer, Integer>
-{
-    private int percent = 0;
-    public AnswerWorker(int percent) {
-        this.percent = percent;
-    }
-        
-    protected Integer doInBackground() throws Exception
-    {
-        progressBar.setValue(percent);
-        lblStatus.setText("Updating the table: "+ percent + "% complete... Please wait.");
-        return 1;
-    }
-
-    protected void done()
-    {
-        
-    }
-    }
+    
     
        public class TableSwingWorker extends SwingWorker<String,RowData> {
 
@@ -2025,18 +2007,7 @@ private void prepareChart(){
         @Override
         protected String doInBackground() throws Exception {
 
-            // This is a deliberate pause to allow the UI time to render
-//            Thread.sleep(2000);
-
-//            System.out.println("Start polulating");
-
-////            for (int index = 0; index < 1000000; index++) {
-//        progressBar.setValue(percent);
-//        lblStatus.setText("Updating the table: "+ percent + "% complete... Please wait.");
-////                RowData data = new RowData(index);
-//                publish(Row);
-////                Thread.yield();
-////            }
+            Buttons(false,false);
             int total_events = event_list.size();
             String[] StringToDisplay = new String[tableColumns.length];
             for(int i =0; i<total_events;i++){
@@ -2073,11 +2044,18 @@ private void prepareChart(){
             if(i==0) percent =0;
             else percent = (i*100)/total_events;            
 //            new AnswerWorker(percent).execute();
+            progressBar.setValue(percent);
+            Thread.sleep(10);
+            lblStatus.setText("Updating the table: "+ percent + "% complete... Please wait.");
+            lblStatus.setForeground(Color.BLUE);
             Thread.yield();
             if(Stop_Updating){
                 break;
             }
             }
+            Buttons(true,false);
+            progressBar.setValue(0);
+            GiveResponse("Logged events have been populated.", Color.BLUE);
             return "return";
         }
 
@@ -2310,6 +2288,7 @@ private void cpuselectCmbBxActionPerformed(java.awt.event.ActionEvent evt) {//GE
     {
         Buttons(false,false);
         model.data.clear();
+        model.fireTableDataChanged();
         UpdateEventList(cpu);
         Buttons(true,false);
     }
@@ -2644,7 +2623,6 @@ private void cpuselectCmbBxActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTabbedPane jTabbedPane1;
