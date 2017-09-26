@@ -1912,7 +1912,7 @@ private void prepareChart(){
         lblStatus.setForeground(Color.BLUE);
         percent = 0;
         Buttons(false,false);
-//        TblData.setAutoResizeMode(TblData.AUTO_RESIZE_OFF);
+        jTable1.setAutoResizeMode(jTable1.AUTO_RESIZE_OFF);
 //        tabHandle.removeAllRows();
         //tabHandle.removeAllColumns();        
 //        fillColoumns(tableColumns);
@@ -1930,11 +1930,12 @@ private void prepareChart(){
             return;
         }
         int total_events = event_list.size();
-//        for(int col =0; col<tableColumns.length;col++){
-//            TblData.getColumnModel().getColumn(col).setCellRenderer(new HighlightRenderer());
-//        }
-//         TableColumnAdjustment tca = new TableColumnAdjustment( TblData);
-//        tca.setDynamicAdjustment(true);  
+        for(int col =0; col<tableColumns.length;col++){
+            jTable1.getColumnModel().getColumn(col).setCellRenderer(new HighlightRenderer());
+        }
+         TableColumnAdjustment tca = new TableColumnAdjustment( jTable1);
+        tca.setDynamicAdjustment(true);  
+        tca.setColumnHeaderIncluded(true);
         Stop_Updating = false;
 //        controlAllButtons(false);
         lblStatus.setForeground(Color.BLUE);
@@ -1979,8 +1980,9 @@ private void prepareChart(){
 //        } catch (InterruptedException ex) {
 //            Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
 //        }        
-//        TableColumnAdjustment tca = new TableColumnAdjustment( TblData);
-//        tca.adjustColumns();        
+//        TableColumnAdjustment tca = new TableColumnAdjustment( jTable1);
+        tca.adjustColumns();  
+//        model.fireTableDataChanged();
     }
     
     class RowData {

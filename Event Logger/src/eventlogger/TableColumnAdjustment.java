@@ -271,7 +271,7 @@ public class TableColumnAdjustment implements PropertyChangeListener, TableModel
 		if (e.getType() == TableModelEvent.UPDATE)
 		{
 			int column = table.convertColumnIndexToView(e.getColumn());
-
+                        if(column == -1) return;
 			//  Only need to worry about an increase in width for this cell
 
 			if (isOnlyAdjustLarger)
