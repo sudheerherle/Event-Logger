@@ -1870,6 +1870,7 @@ private void prepareChart(){
 
             public void run()
             {
+                cpuselectCmbBx.setSelectedIndex(0);
                 Buttons(false,true);
 //                tabHandle.removeAllRows();
                 model.data.clear();
@@ -1919,11 +1920,15 @@ private void prepareChart(){
 //        TblData.doLayout();
         progressBar.setIndeterminate(false);
         event_list = sharedData.get_logged_events();
-        if(event_list.size()==0){
+        if(event_list.size()==0 && sharedData.event_downloaded){
             JOptionPane.showMessageDialog(this.getFrame(), "There are no events logged in the Event Logger", "Events not available", JOptionPane.ERROR_MESSAGE);
             lblStatus.setText("");
             return;
-        }  
+        } else if(!sharedData.event_downloaded && cpu.equals("All")==false) {
+            JOptionPane.showMessageDialog(this.getFrame(), "Please go to 'Event Download' tab and download the events first", "Events not available", JOptionPane.ERROR_MESSAGE);
+            lblStatus.setText("");
+            return;
+        }
         int total_events = event_list.size();
 //        for(int col =0; col<tableColumns.length;col++){
 //            TblData.getColumnModel().getColumn(col).setCellRenderer(new HighlightRenderer());
@@ -2022,7 +2027,7 @@ private void prepareChart(){
             StringToDisplay[8] = getString(ed.DS_REV_Axle_Count);
             StringToDisplay[9] = getString(ed.US_REV_Axle_Count);
             StringToDisplay[10] = "--";
-            System.out.println(Arrays.toString(StringToDisplay));
+//            System.out.println(Arrays.toString(StringToDisplay));
             if(cpu.equals("All")){
                 RowData rowdata = new RowData(StringToDisplay);
                 publish(rowdata);
