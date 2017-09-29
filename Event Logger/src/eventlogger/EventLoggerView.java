@@ -1884,6 +1884,9 @@ private void prepareChart(){
             public void run()
             {
                 controlAllButtons(false);
+                EventStatus.setValueAt("Updating...", 0, 1);
+                EventStatus.setValueAt("Updating...", 1, 1);
+                EventStatus.setValueAt("Updating...", 2, 1);
                 DataFrame df = new DataFrame();
                 df.CPU_address =cpu_Addrs;
                 df.CMD = GET_EVENT_COUNTS;
