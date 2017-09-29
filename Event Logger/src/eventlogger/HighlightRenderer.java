@@ -26,7 +26,8 @@ public class HighlightRenderer extends DefaultTableCellRenderer {
             if(value==null) return this;
              if(value.toString().contains("FAILURE")
                     ||value.toString().contains("DEFECTIVE")
-                     ||value.toString().contains("FAILED")){
+                     ||value.toString().contains("FAILED")
+                     ||value.toString().contains("MISMATCH")){
                 setForeground(Color.RED);
             }else if(value.toString().contains("CLEAR")){
                 setForeground(Color.GREEN);
