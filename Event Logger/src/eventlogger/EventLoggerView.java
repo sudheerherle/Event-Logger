@@ -72,6 +72,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PiePlot3D;
 import org.jfree.data.general.DefaultPieDataset;
+import org.omg.PortableServer.POAManagerPackage.State;
 /**
  * The application's main frame.
  */
@@ -343,18 +344,25 @@ public class EventLoggerView extends FrameView {
         return crc;
         }
      public void GiveResponse(final String string, final Color color) {
-        Thread te = new Thread(new Runnable() {
-
-        public void run()
-        {
-            lblStatus(string, color,3000);
+        
+         javax.swing.SwingUtilities.invokeLater(new Runnable() {
+        public void run() {
+           lblStatus(string, color,3000);
         }
-        });
-        te.start();
+    });
+//         Thread te = new Thread(new Runnable() {
+//
+//        public void run()
+//        {
+//            lblStatus(string, color,3000);
+//        }
+//        });
+//        te.start();
     }
     
-        public void lblStatus(String string,Color g,long timeOut){
+        public void lblStatus(String string,Color g,long time){
         Icon ic=null;
+        final long timeOut  = time;
         lblStatus.setForeground(g);//setBackground(g);
         lblStatus.setText(string);
         lblStatus.setVisible(true);
@@ -371,16 +379,34 @@ public class EventLoggerView extends FrameView {
           ic = null;
         }
         lblStatus.setIcon(ic);
-        try {
-            Thread.sleep(timeOut);
-        } catch (InterruptedException ex) {
+        
+        Thread te = new Thread(new Runnable() {
+
+        public void run()
+        {
+            try{
+                Sleep(timeOut);
+                if(timeOut!=0){
+                lblStatus.setText("");
+                lblStatus.setIcon(null);
+                ClearStatusLabel();
+                }
+            }catch(Exception x){
+                
+            }
         }
-        if(timeOut!=0){
-        lblStatus.setText("");
-        lblStatus.setIcon(null);
-        ClearStatusLabel();
-        }
+        });
+        te.start();
+        
     }
+        
+        private void Sleep(long t){
+        try {
+            Thread.sleep(t);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        }
     private void ClearStatusLabel(){
         lblStatus.setText("");
         lblStatus.setIcon(null);
@@ -632,7 +658,7 @@ private void prepareChart(){
             this.cpu_Addrs = DF_recieved.CPU_address;
             this.unit_type = (int)DF_recieved.data[0];
             this.Network_ID = Long.toHexString((long)DF_recieved.data[1]);
-            GiveResponse("Updated the DAC status", Color.BLUE);
+            
             UpdateStatusPanel();
             retval = true;
             break;
@@ -691,7 +717,7 @@ private void prepareChart(){
             EventStatus.setValueAt(Str_from_date, 1, 1);
             EventStatus.setValueAt(Str_to_date, 2, 1);
             
-            GiveResponse("Refreshed the event counts", Color.BLUE);
+            GiveResponse("Event details updated", Color.BLUE);
             retval = true;
             break;           
         }
@@ -1866,6 +1892,7 @@ private void prepareChart(){
     }//GEN-LAST:event_BtnRefreshActionPerformed
 
     private void BtnDownloadEventsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnDownloadEventsActionPerformed
+        sharedData.event_downloaded = false;
         Thread get_events = new Thread(new Runnable() {
 
             public void run()
@@ -1875,10 +1902,12 @@ private void prepareChart(){
 //                tabHandle.removeAllRows();
                 model.data.clear();
                 model.fireTableDataChanged();
+                Buttons(false,true);
                 progressBar.setValue(0);
 //                model.removeTableModelListener(jTable1);
                 jTabbedPane1.setSelectedIndex(4);                
                 sharedData.event_list.clear();
+                Buttons(false,true);
                 DataFrame df = new DataFrame();
                 df.CPU_address =cpu_Addrs;
                 df.CMD = GET_LOGGED_EVENTS;
@@ -1920,7 +1949,8 @@ private void prepareChart(){
 //        TblData.doLayout();
         progressBar.setIndeterminate(false);
         event_list = sharedData.get_logged_events();
-        if(event_list.size()==0 && sharedData.event_downloaded){
+        if(sharedData.event_downloaded && event_list.size()==0){
+            sharedData.event_downloaded = false;
             JOptionPane.showMessageDialog(this.getFrame(), "There are no events logged in the Event Logger", "Events not available", JOptionPane.ERROR_MESSAGE);
             lblStatus.setText("");
             return;
@@ -1937,7 +1967,7 @@ private void prepareChart(){
         tca.setDynamicAdjustment(true);  
         tca.setColumnHeaderIncluded(false);
         Stop_Updating = false;
-//        controlAllButtons(false);
+        controlAllButtons(false);
         lblStatus.setForeground(Color.BLUE);
         TableSwingWorker worker = new TableSwingWorker(cpu);
         worker.execute();
@@ -1971,10 +2001,10 @@ private void prepareChart(){
 //                break;
 //            }
 //        }
-        GiveResponse("Logged events have been populated.", Color.BLUE);
-        controlAllButtons(true);
-        progressBar.setValue(0); 
-        controlAllButtons(true);
+//        GiveResponse("Logged events have been populated.", Color.BLUE);
+//        controlAllButtons(true);
+//        progressBar.setValue(0); 
+//        controlAllButtons(true);
 //        try {
 //            Thread.sleep(1000);
 //        } catch (InterruptedException ex) {
@@ -2283,6 +2313,7 @@ private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
 private void cpuselectCmbBxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cpuselectCmbBxActionPerformed
     final String cpu = (String) cpuselectCmbBx.getSelectedItem();
+    if(sharedData.event_downloaded == false) return;
     Thread te = new Thread(new Runnable() {
 
     public void run()
@@ -2558,7 +2589,8 @@ private void cpuselectCmbBxActionPerformed(java.awt.event.ActionEvent evt) {//GE
        }
        networkIDField.setText(Network_ID);
        dpField.setText(unit_type_txt);
-       jTextField4.setText(Long.toString(this.cpu_Addrs,10));       
+       jTextField4.setText(Long.toString(this.cpu_Addrs,10));     
+       GiveResponse("Updated the DAC status", Color.BLUE);
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtnConnect;
