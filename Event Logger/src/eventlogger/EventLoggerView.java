@@ -514,6 +514,8 @@ private void prepareChart(){
                retval =  true;
             }
         } catch (IOException ex) {
+            sharedData.connected = false;
+            sharedData.connectedToHardware = false;
             GiveResponse("Port was not found or in use...", Color.red);
             retval = false;
             //Logger.getLogger(SimpleSerialPort.class.getName()).log(Level.SEVERE, null, ex);
@@ -600,6 +602,7 @@ private void prepareChart(){
     private boolean SendData(DataFrame frame){
         byte[] data_to_send = getArrayFromPacket(frame);
         System.out.println("Sent: "+Arrays.toString(data_to_send));
+        sharedData.dataRecievedFlag = false;
         if(serialPortWrite(data_to_send)){
            return wait_for_resp();  
         }
@@ -878,7 +881,7 @@ private void prepareChart(){
                         .addComponent(jLabel6)
                         .addGap(18, 18, 18)
                         .addComponent(connection_indicator_panel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(247, Short.MAX_VALUE))
+                .addContainerGap(237, Short.MAX_VALUE))
         );
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1657,11 +1660,13 @@ private void prepareChart(){
     mainPanel.setLayout(mainPanelLayout);
     mainPanelLayout.setHorizontalGroup(
         mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
+        .addGroup(mainPanelLayout.createSequentialGroup()
             .addContainerGap()
-            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.LEADING, 0, 1045, Short.MAX_VALUE)
-                .addComponent(jTabbedPane2, javax.swing.GroupLayout.Alignment.LEADING))
+            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(mainPanelLayout.createSequentialGroup()
+                    .addGap(10, 10, 10)
+                    .addComponent(jTabbedPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1035, Short.MAX_VALUE))
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING, 0, 1045, Short.MAX_VALUE))
             .addContainerGap())
     );
     mainPanelLayout.setVerticalGroup(
@@ -1837,7 +1842,7 @@ private void prepareChart(){
         Thread set_rtc_time = new Thread(new Runnable() {
 
             public void run()
-            {
+            {                
                 controlAllButtons(false);
                 DataFrame df = new DataFrame();
                 df.CPU_address = cpu_Addrs;

@@ -221,9 +221,9 @@ public class SerialHelper implements Runnable , SerialPortEventListener {
                 byte[] recieved_data = new byte[len-1];//54216e57
                 System.arraycopy(buffer, 0, recieved_data, 0, len-1);
                 shareddata.dataRecieved(recieved_data);                
-                shareddata.dataRecievedFlag = true;
+//                shareddata.dataRecievedFlag = true;
                 
-//                System.out.println("Recieved: "+Arrays.toString(recieved_data));
+                System.out.println("Recieved: "+Arrays.toString(recieved_data));
             }
             catch ( IOException e )
             {

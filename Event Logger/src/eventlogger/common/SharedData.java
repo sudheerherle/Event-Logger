@@ -155,7 +155,7 @@ public class SharedData
     public void dataRecieved(byte[] buffer) { 
         int count =0;
         if(buffer[1] ==0){
-            dataRecievedFlag = true;
+//            dataRecievedFlag = true;
             count  = (buffer.length-5)/19;
             for(int h=0;h<count*19;h=h+19){
             byte[] buf = new byte[19];
@@ -227,6 +227,7 @@ public class SharedData
         System.arraycopy(buffer, 2, DF_recieved.data, 0, DF_recieved.data.length);
         DF_recieved.Csum = (byte) ((byte) ((byte)buffer[DF_recieved.data.length+2] << 8) 
                                          +((byte)buffer[DF_recieved.data.length+3])); 
+        dataRecievedFlag = true;
       //  EventLoggerApp.getApplication().getView().wait_for_resp();
     }
     public byte[] getBuffer(){
