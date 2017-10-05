@@ -423,7 +423,7 @@ public class EventLoggerView extends FrameView {
                 if(port=="USB"){
                     ports = sh.getSerialPorts();
                     if(ports.length==0){
-                        GiveResponse("Event Logger USB not open", Color.RED);
+                        GiveResponse("Insys Digital SSDAC Event Logger not connected", Color.RED);
                         retval = false;
                     }
                 }
