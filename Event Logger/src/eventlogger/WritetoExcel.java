@@ -87,10 +87,10 @@ class WriteToExcel {
                 row.createCell(3).setCellValue(ed.get(i).event_ID);
                 row.createCell(4).setCellValue(get_event_desc(ed.get(i).event_ID));
                 row.createCell(5).setCellValue(ed.get(i).date_time);
-                row.createCell(6).setCellValue(Long.toString(ed.get(i).DS_FWD_Axle_Count,10));
-                row.createCell(7).setCellValue(Long.toString(ed.get(i).US_FWD_Axle_Count,10));
-                row.createCell(8).setCellValue(Long.toString(ed.get(i).DS_REV_Axle_Count,10));
-                row.createCell(9).setCellValue(Long.toString(ed.get(i).US_REV_Axle_Count,10));                
+                row.createCell(6).setCellValue(Long.toString(ed.get(i).Count1,10));
+                row.createCell(7).setCellValue(Long.toString(ed.get(i).Count2,10));
+                row.createCell(8).setCellValue(Long.toString(ed.get(i).Count3,10));
+                row.createCell(9).setCellValue(Long.toString(ed.get(i).Count4,10));                
             }
        }
        public void writeTestDetailsToExcel(String Name,String Value){

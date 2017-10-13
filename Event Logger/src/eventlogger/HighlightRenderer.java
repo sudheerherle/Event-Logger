@@ -27,7 +27,11 @@ public class HighlightRenderer extends DefaultTableCellRenderer {
              if(value.toString().contains("FAILURE")
                     ||value.toString().contains("DEFECTIVE")
                      ||value.toString().contains("FAILED")
-                     ||value.toString().contains("MISMATCH")){
+                     ||value.toString().contains("MISMATCH")
+                     ||value.toString().contains("DIRECT")
+                     ||value.toString().contains("PULSATING")
+                     ||value.toString().contains("NOT DETECTING")
+                     ||value.toString().contains("INFLUENCE")){
                 setForeground(Color.RED);
             }else if(value.toString().contains("CLEAR")){
                 setForeground(Color.GREEN);

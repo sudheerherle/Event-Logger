@@ -123,7 +123,7 @@ public class EventLoggerView extends FrameView {
     private String Network_ID="NA";
     private int percent = 0;
     private String[] tableColumns = {"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Remote Forward","Local Reverse","Remote Reverse","Total Train Wheels"};
-    private  MyTableModel model = new MyTableModel();;
+    private  MyTableModel model = new MyTableModel();
     
     public EventLoggerView(SingleFrameApplication app) {
         super(app);
@@ -246,7 +246,7 @@ public class EventLoggerView extends FrameView {
     
          public class MyTableModel extends AbstractTableModel {
 
-        private String[] columnNames = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Remote Forward","Local Reverse","Remote Reverse","Total Train Wheels"};
+//        private String[] columnNames = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Remote Forward","Local Reverse","Remote Reverse","Total Train Wheels"};
         private List<RowData> data;
 
         public MyTableModel() {
@@ -260,12 +260,12 @@ public class EventLoggerView extends FrameView {
 
         @Override
         public String getColumnName(int col) {
-            return columnNames[col];
+            return tableColumns[col];
         }
 
         @Override
         public int getColumnCount() {
-            return columnNames.length;
+            return tableColumns.length;
         }
 
         @Override
@@ -1948,6 +1948,8 @@ private void prepareChart(){
         lblStatus.setText("Updating the table. Please wait...");
         lblStatus.setForeground(Color.BLUE);
         percent = 0;
+        model = new MyTableModel();
+        jTable1.setModel(model);
         Buttons(false,false);
         jTable1.setAutoResizeMode(jTable1.AUTO_RESIZE_OFF);
 //        tabHandle.removeAllRows();
@@ -2062,11 +2064,16 @@ private void prepareChart(){
             String event_desc = get_event_desc(ed.event_ID);
             StringToDisplay[4] = event_desc;
             StringToDisplay[5] = ed.date_time;
-            StringToDisplay[6] = getString(ed.DS_FWD_Axle_Count);
-            StringToDisplay[7] = getString(ed.US_FWD_Axle_Count);
-            StringToDisplay[8] = getString(ed.DS_REV_Axle_Count);
-            StringToDisplay[9] = getString(ed.US_REV_Axle_Count);
+            StringToDisplay[6] = getString(ed.Count1);   //9 & 10
+            if(unit_type!=0){
+            StringToDisplay[7] = getString(ed.Count2); //5 & 6
+            StringToDisplay[8] = getString(ed.Count3); //11  & 12
+            StringToDisplay[9] = getString(ed.Count4);  //7 & 8            
             StringToDisplay[10] = "--";
+            }else{
+            StringToDisplay[7] = "--";
+            }
+            
 //            System.out.println(Arrays.toString(StringToDisplay));
             if(cpu.equals("All")){
                 RowData rowdata = new RowData(StringToDisplay);
@@ -2120,14 +2127,31 @@ private void prepareChart(){
     private String get_event_desc(int event_ID){
         String retval = "";
         for(EventDescription ed : EventDescription.values()){
-            if(event_ID == ed.ordinal()){
+            if(event_ID == ed.getOrdinal()){
                 retval = ed.toString();
+                retval = retval.substring(6);
                 retval = retval.replace("_", " ");
                 retval = retval.replace("__", ">");
                 retval = retval.replace("___", "<");
                 retval = retval.replace("MODEM BOARD MISSING1", "MODEM BOARD MISSING");
                 retval = retval.replace("MODEM BOARD FOUND1", "MODEM BOARD FOUND");
+                retval = getCapCorrected(retval);
             }
+        }
+        return retval;
+    }
+    
+    private String getCapCorrected(String t){
+        String retval = "";
+        String[] p = t.split(" ");
+        for(int i=0;i<p.length;i++){
+            if(p[i].length()<2){
+                
+            }
+            else if(p[i].length() > 3){
+                p[i] = p[i].substring(0, 1).concat(p[i].substring(1, p[i].length()));
+            }
+            retval = retval.concat(p[i]);
         }
         return retval;
     }
@@ -2495,10 +2519,10 @@ private void cpuselectCmbBxActionPerformed(java.awt.event.ActionEvent evt) {//GE
                                 ed.get(i).event_ID,
                                 get_event_desc(ed.get(i).event_ID),
                                 ed.get(i).date_time,
-                                ed.get(i).DS_FWD_Axle_Count,
-                                ed.get(i).US_FWD_Axle_Count,
-                                ed.get(i).DS_REV_Axle_Count,
-                                ed.get(i).US_REV_Axle_Count);
+                                ed.get(i).Count1,
+                                ed.get(i).Count2,
+                                ed.get(i).Count3,
+                                ed.get(i).Count4);
             }  
             db.close();
             retval = true;
@@ -2560,39 +2584,78 @@ private void cpuselectCmbBxActionPerformed(java.awt.event.ActionEvent evt) {//GE
        switch(this.unit_type){
             case 0:
             unit_type_txt = "DE";
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Count","Total Train Wheels"};
             break;
                 
             case 1:
             unit_type_txt = "SF";
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Remote Forward","Local Reverse","Remote Reverse","Total Train Wheels"};
             break;
                 
             case 2:
             unit_type_txt = "EF";
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Remote Forward","Local Reverse","Remote Reverse","Total Train Wheels"};
             break;
                 
             case 3:
             unit_type_txt = "CF";
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","SF Count","S-CF Count","E-CF Count","EF Count","Total Train Wheels"};
             break;
                 
             case 4:
             unit_type_txt = "3D1S-3A";
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","NA","Total Train Wheels"};
             break;
                 
             case 5:
             unit_type_txt = "3D1S-3B";
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Total Train Wheels"};
+            
             break;
                 
             case 6:
             unit_type_txt = "3D1S-3C";
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Total Train Wheels"};
+            break;
             
             case 7:
             unit_type_txt = "3D-SF";
-            
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","SF Count","S-CF Count","E-CF Count","EF Count","Total Train Wheels"};
+            break;
+                
             case 8:
             unit_type_txt = "3D-EF";
-            
+            break;
+                
             case 9:
             unit_type_txt = "LCWS";
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Sensor A","Sensor B","Sensor C","Sensor D","Total Train Wheels"};
+            break;
+                
+            case 10:
+            unit_type_txt = "LCWS - DL";
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Sensor A","Sensor B","Sensor C","Sensor D","Total Train Wheels"};
+            break;
+                    
+            case 11:
+            unit_type_txt = "4D1s - A";
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Train Wheels"};
+            
+            break;
+                        
+            case 12:
+            unit_type_txt = "4D1s - B";
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Train Wheels"};            
+            break;
+                
+            case 13:
+            unit_type_txt = "4D1s - C";
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Train Wheels"};            
+            break;
+                    
+            case 14:
+            unit_type_txt = "4D1s - D";
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Train Wheels"};
             break;
        }
        networkIDField.setText(Network_ID);

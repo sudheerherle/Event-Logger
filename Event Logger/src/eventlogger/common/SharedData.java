@@ -172,7 +172,7 @@ public class SharedData
             
             EventDetails ed = new EventDetails();
             ed.Station_Name = EventLoggerApp.getApplication().getView().stnNameTxtField.getText();
-            ed.event_ID = DF_recieved.data[0];            
+            ed.event_ID = DF_recieved.data[0] & 0xff;            
             long event_time =0;
             String Str_event_date = "";
             event_time = (DF_recieved.data[4] & 0xFF) << 24;
@@ -187,10 +187,10 @@ public class SharedData
             DateFormat df_event_time = new SimpleDateFormat("HH:mm:ss");
             Str_event_date = Str_event_date + df_event_time.format(rtc_event_date_time);            
             ed.date_time = Str_event_date;            
-            ed.US_FWD_Axle_Count = (int)((DF_recieved.data[6] & 0xFF) << 8) + (DF_recieved.data[5] & 0xFF);
-            ed.US_REV_Axle_Count = (int)((DF_recieved.data[8] & 0xFF) << 8) + (DF_recieved.data[7] & 0xFF);
-            ed.DS_FWD_Axle_Count = (int)((DF_recieved.data[10] & 0xFF) << 8) + (DF_recieved.data[9] & 0xFF);
-            ed.DS_REV_Axle_Count = (int)((DF_recieved.data[12] & 0xFF) << 8) + (DF_recieved.data[11] & 0xFF); 
+            ed.Count1 = (int)((DF_recieved.data[6] & 0xFF) << 8) + (DF_recieved.data[5] & 0xFF);
+            ed.Count2 = (int)((DF_recieved.data[8] & 0xFF) << 8) + (DF_recieved.data[7] & 0xFF);
+            ed.Count3 = (int)((DF_recieved.data[10] & 0xFF) << 8) + (DF_recieved.data[9] & 0xFF);
+            ed.Count4 = (int)((DF_recieved.data[12] & 0xFF) << 8) + (DF_recieved.data[11] & 0xFF); 
             ed.CPU_Addrs = DF_recieved.CPU_address;
             event_list.add(ed);  
             }
