@@ -24,22 +24,24 @@ public class HighlightRenderer extends DefaultTableCellRenderer {
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             setText(String.valueOf(value));
             if(value==null) return this;
-             if(value.toString().contains("FAILURE")
-                    ||value.toString().contains("DEFECTIVE")
-                     ||value.toString().contains("FAILED")
-                     ||value.toString().contains("MISMATCH")
-                     ||value.toString().contains("DIRECT")
-                     ||value.toString().contains("PULSATING")
-                     ||value.toString().contains("NOT DETECTING")
-                     ||value.toString().contains("INFLUENCE")){
+             if(value.toString().contains("Failure")
+                    ||value.toString().contains("Defective")
+                     ||value.toString().contains("Failed")
+                     ||value.toString().contains("Mismatch")
+                     ||value.toString().contains("Direct")
+                     ||value.toString().contains("Pulsating")
+                     ||value.toString().contains("NOT Detecting")
+                     ||value.toString().contains("Influence")){
                 setForeground(Color.RED);
-            }else if(value.toString().contains("CLEAR")){
+            }else if(value.toString().contains("Clear")
+                    || value.toString().contains("Exit")){
                 setForeground(Color.GREEN);
-            }else if(value.toString().contains("MISSING")){
+            }else if(value.toString().contains("Missing")){
                 setForeground(Color.PINK);
-            }else if(value.toString().contains("NORMAL")){
+            }else if(value.toString().contains("Normal")){
                 setForeground(Color.BLUE);
-            }else if(value.toString().contains("OCCUPIED")){
+            }else if(value.toString().contains("Occupied")
+                    || value.toString().contains("Entry")){
                 setForeground(Color.ORANGE);
             }else{
                setForeground(Color.BLACK); 

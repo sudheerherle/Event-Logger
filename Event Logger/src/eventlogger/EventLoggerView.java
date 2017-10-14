@@ -2154,9 +2154,9 @@ private void prepareChart(){
                 
             }
             else if(p[i].length() > 3){
-                p[i] = p[i].substring(0, 1).concat(p[i].substring(1, p[i].length()));
+                p[i] = p[i].substring(0, 1).concat(p[i].substring(1, p[i].length()).toLowerCase());
             }
-            retval = retval.concat(p[i]);
+            retval = retval.concat(" ").concat(p[i]);
         }
         return retval;
     }
