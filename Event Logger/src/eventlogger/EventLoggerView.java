@@ -2068,8 +2068,13 @@ private void prepareChart(){
             if(unit_type!=0){
             StringToDisplay[7] = getString(ed.Count2); //5 & 6
             StringToDisplay[8] = getString(ed.Count3); //11  & 12
+            if(StringToDisplay.length==10){
+                StringToDisplay[9] = "--";
+            }
+            else{ 
             StringToDisplay[9] = getString(ed.Count4);  //7 & 8            
             StringToDisplay[10] = "--";
+            }
             }else{
             StringToDisplay[7] = "--";
             }
