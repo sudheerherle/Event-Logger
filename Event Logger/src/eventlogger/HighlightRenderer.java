@@ -34,14 +34,14 @@ public class HighlightRenderer extends DefaultTableCellRenderer {
                      ||value.toString().contains("Influence")){
                 setForeground(Color.RED);
             }else if(value.toString().contains("Clear")
-                    || value.toString().contains("Exit")){
+                    ){
                 setForeground(Color.GREEN);
             }else if(value.toString().contains("Missing")){
                 setForeground(Color.PINK);
             }else if(value.toString().contains("Normal")){
                 setForeground(Color.BLUE);
             }else if(value.toString().contains("Occupied")
-                    || value.toString().contains("Entry")){
+                    ){
                 setForeground(Color.ORANGE);
             }else{
                setForeground(Color.BLACK); 
