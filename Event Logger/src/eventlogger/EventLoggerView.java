@@ -738,13 +738,6 @@ private void prepareChart(){
     private void initComponents() {
 
         mainPanel = new javax.swing.JPanel();
-        jTabbedPane2 = new javax.swing.JTabbedPane();
-        jPanel9 = new javax.swing.JPanel();
-        lblStatus = new javax.swing.JLabel();
-        connection_indicator_panel = new javax.swing.JPanel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        connection_indicator_panel1 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel3 = new javax.swing.JPanel();
         BtnConnect = new javax.swing.JButton();
@@ -810,6 +803,12 @@ private void prepareChart(){
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jPanel17 = new javax.swing.JPanel();
+        jPanel9 = new javax.swing.JPanel();
+        lblStatus = new javax.swing.JLabel();
+        connection_indicator_panel = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        connection_indicator_panel1 = new javax.swing.JPanel();
         menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
@@ -822,88 +821,8 @@ private void prepareChart(){
 
         mainPanel.setName("mainPanel"); // NOI18N
 
-        jTabbedPane2.setTabPlacement(javax.swing.JTabbedPane.LEFT);
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(eventlogger.EventLoggerApp.class).getContext().getResourceMap(EventLoggerView.class);
-        jTabbedPane2.setFont(resourceMap.getFont("jTabbedPane2.font")); // NOI18N
-        jTabbedPane2.setName("jTabbedPane2"); // NOI18N
-
-        jPanel9.setName("jPanel9"); // NOI18N
-
-        lblStatus.setName("lblStatus"); // NOI18N
-
-        connection_indicator_panel.setBorder(javax.swing.BorderFactory.createBevelBorder(0));
-        connection_indicator_panel.setName("connection_indicator_panel"); // NOI18N
-
-        javax.swing.GroupLayout connection_indicator_panelLayout = new javax.swing.GroupLayout(connection_indicator_panel);
-        connection_indicator_panel.setLayout(connection_indicator_panelLayout);
-        connection_indicator_panelLayout.setHorizontalGroup(
-            connection_indicator_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 22, Short.MAX_VALUE)
-        );
-        connection_indicator_panelLayout.setVerticalGroup(
-            connection_indicator_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 18, Short.MAX_VALUE)
-        );
-
-        jLabel4.setText(resourceMap.getString("jLabel4.text")); // NOI18N
-        jLabel4.setName("jLabel4"); // NOI18N
-
-        jLabel6.setText(resourceMap.getString("jLabel6.text")); // NOI18N
-        jLabel6.setName("jLabel6"); // NOI18N
-
-        connection_indicator_panel1.setBorder(javax.swing.BorderFactory.createBevelBorder(0));
-        connection_indicator_panel1.setName("connection_indicator_panel1"); // NOI18N
-
-        javax.swing.GroupLayout connection_indicator_panel1Layout = new javax.swing.GroupLayout(connection_indicator_panel1);
-        connection_indicator_panel1.setLayout(connection_indicator_panel1Layout);
-        connection_indicator_panel1Layout.setHorizontalGroup(
-            connection_indicator_panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 22, Short.MAX_VALUE)
-        );
-        connection_indicator_panel1Layout.setVerticalGroup(
-            connection_indicator_panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 18, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
-        jPanel9.setLayout(jPanel9Layout);
-        jPanel9Layout.setHorizontalGroup(
-            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel9Layout.createSequentialGroup()
-                .addGap(52, 52, 52)
-                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 545, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel9Layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addGap(18, 18, 18)
-                        .addComponent(connection_indicator_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel6)
-                        .addGap(18, 18, 18)
-                        .addComponent(connection_indicator_panel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(237, Short.MAX_VALUE))
-        );
-        jPanel9Layout.setVerticalGroup(
-            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel9Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(lblStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(connection_indicator_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(connection_indicator_panel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        jPanel9Layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {connection_indicator_panel, jLabel4});
-
-        jTabbedPane2.addTab(resourceMap.getString("jPanel9.TabConstraints.tabTitle"), jPanel9); // NOI18N
-
         jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.LEFT);
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(eventlogger.EventLoggerApp.class).getContext().getResourceMap(EventLoggerView.class);
         jTabbedPane1.setFont(resourceMap.getFont("jTabbedPane1.font")); // NOI18N
         jTabbedPane1.setName("jTabbedPane1"); // NOI18N
         jTabbedPane1.addChangeListener(new ChangeListener(){
@@ -1656,26 +1575,105 @@ private void prepareChart(){
 
     jTabbedPane1.addTab(resourceMap.getString("jPanel2.TabConstraints.tabTitle"), jPanel2); // NOI18N
 
+    jPanel9.setBorder(new javax.swing.border.SoftBevelBorder(0));
+    jPanel9.setName("jPanel9"); // NOI18N
+
+    lblStatus.setName("lblStatus"); // NOI18N
+
+    connection_indicator_panel.setBorder(javax.swing.BorderFactory.createBevelBorder(0));
+    connection_indicator_panel.setName("connection_indicator_panel"); // NOI18N
+
+    javax.swing.GroupLayout connection_indicator_panelLayout = new javax.swing.GroupLayout(connection_indicator_panel);
+    connection_indicator_panel.setLayout(connection_indicator_panelLayout);
+    connection_indicator_panelLayout.setHorizontalGroup(
+        connection_indicator_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGap(0, 22, Short.MAX_VALUE)
+    );
+    connection_indicator_panelLayout.setVerticalGroup(
+        connection_indicator_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGap(0, 18, Short.MAX_VALUE)
+    );
+
+    jLabel4.setText(resourceMap.getString("jLabel4.text")); // NOI18N
+    jLabel4.setName("jLabel4"); // NOI18N
+
+    jLabel6.setText(resourceMap.getString("jLabel6.text")); // NOI18N
+    jLabel6.setName("jLabel6"); // NOI18N
+
+    connection_indicator_panel1.setBorder(javax.swing.BorderFactory.createBevelBorder(0));
+    connection_indicator_panel1.setName("connection_indicator_panel1"); // NOI18N
+
+    javax.swing.GroupLayout connection_indicator_panel1Layout = new javax.swing.GroupLayout(connection_indicator_panel1);
+    connection_indicator_panel1.setLayout(connection_indicator_panel1Layout);
+    connection_indicator_panel1Layout.setHorizontalGroup(
+        connection_indicator_panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGap(0, 22, Short.MAX_VALUE)
+    );
+    connection_indicator_panel1Layout.setVerticalGroup(
+        connection_indicator_panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGap(0, 18, Short.MAX_VALUE)
+    );
+
+    javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
+    jPanel9.setLayout(jPanel9Layout);
+    jPanel9Layout.setHorizontalGroup(
+        jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(jPanel9Layout.createSequentialGroup()
+            .addGap(52, 52, 52)
+            .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(lblStatus, javax.swing.GroupLayout.DEFAULT_SIZE, 983, Short.MAX_VALUE)
+                .addGroup(jPanel9Layout.createSequentialGroup()
+                    .addComponent(jLabel4)
+                    .addGap(18, 18, 18)
+                    .addComponent(connection_indicator_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(18, 18, 18)
+                    .addComponent(jLabel6)
+                    .addGap(18, 18, 18)
+                    .addComponent(connection_indicator_panel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+            .addContainerGap())
+    );
+    jPanel9Layout.setVerticalGroup(
+        jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(jPanel9Layout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(lblStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(connection_indicator_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(connection_indicator_panel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+    );
+
+    jPanel9Layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {connection_indicator_panel, jLabel4});
+
     javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
     mainPanel.setLayout(mainPanelLayout);
     mainPanelLayout.setHorizontalGroup(
         mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(mainPanelLayout.createSequentialGroup()
             .addContainerGap()
-            .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(mainPanelLayout.createSequentialGroup()
-                    .addGap(10, 10, 10)
-                    .addComponent(jTabbedPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1035, Short.MAX_VALUE))
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING, 0, 1045, Short.MAX_VALUE))
+            .addComponent(jTabbedPane1, 0, 1045, Short.MAX_VALUE)
             .addContainerGap())
+        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()))
     );
     mainPanelLayout.setVerticalGroup(
         mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
             .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(jTabbedPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGap(31, 31, 31))
+            .addGap(110, 110, 110))
+        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
+                .addContainerGap(574, Short.MAX_VALUE)
+                .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()))
     );
 
     menuBar.setName("menuBar"); // NOI18N
@@ -2735,7 +2733,6 @@ private void cpuselectCmbBxActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextField4;
     private javax.swing.JLabel lblStatus;
