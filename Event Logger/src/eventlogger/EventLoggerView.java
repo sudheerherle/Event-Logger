@@ -15,6 +15,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
@@ -36,6 +38,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -67,6 +70,9 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg;
 import org.apache.pdfbox.pdmodel.graphics.xobject.PDXObjectImage;
+import org.jdatepicker.impl.JDatePanelImpl;
+import org.jdatepicker.impl.JDatePickerImpl;
+import org.jdatepicker.impl.UtilDateModel;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -82,6 +88,8 @@ public class EventLoggerView extends FrameView {
     private SerialHelper sh = new SerialHelper();
     private static byte[] poll_port = new byte[]{0x1,0x0};
     private  TimerTask Blinker_Task ;
+    UtilDateModel from_model = new UtilDateModel();
+    UtilDateModel to_model = new UtilDateModel();
     private TimerTask Timeout_task;
     private TimerTask Write_Timeout_task;
     private boolean time_out = false;
@@ -236,6 +244,34 @@ public class EventLoggerView extends FrameView {
         Timer timer1 = new Timer();
         timer1.scheduleAtFixedRate(Com_Blinker_Task, 0, 300);
         jTabbedPane1.setSelectedIndex(0);
+        
+//        UtilDateModel model = new UtilDateModel();
+//model.setDate(20,04,2014);
+// Need this...
+        Properties p = new Properties();
+        p.put("text.today", "Today");
+        p.put("text.month", "Month");
+        p.put("text.year", "Year");
+        JDatePanelImpl datePanel = new JDatePanelImpl(from_model, p);
+        // Don't know about the formatter, but there it is...
+        JDatePickerImpl fromDate = new JDatePickerImpl(datePanel, new DateLabelFormatter());
+        
+//        jPanel18.setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.weightx = 100.0;
+        jPanel18.add(fromDate,c);
+//        UtilDateModel tomodel = new UtilDateModel();
+        to_model.setValue(new Date());
+        JDatePanelImpl todatePanel = new JDatePanelImpl(to_model, p);
+        // Don't know about the formatter, but there it is...
+        JDatePickerImpl toDate = new JDatePickerImpl(todatePanel, new DateLabelFormatter());
+//        jPanel19.setLayout(new GridBagLayout());
+        jPanel19.add(toDate,c);
+        ButtonGroup bg = new ButtonGroup();
+        bg.add(jRadioButton1);
+        bg.add(jRadioButton2);
+        jRadioButton1.setSelected(true);
+        
     }
 
      public boolean SendPacketRecieveResponse(DataFrame df){
@@ -736,6 +772,7 @@ private void prepareChart(){
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         mainPanel = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
@@ -785,6 +822,13 @@ private void prepareChart(){
         jScrollPane2 = new javax.swing.JScrollPane();
         EventStatus = new javax.swing.JTable();
         BtnRefresh = new javax.swing.JButton();
+        jPanel5 = new javax.swing.JPanel();
+        jRadioButton1 = new javax.swing.JRadioButton();
+        jRadioButton2 = new javax.swing.JRadioButton();
+        jPanel18 = new javax.swing.JPanel();
+        jLabel18 = new javax.swing.JLabel();
+        jPanel19 = new javax.swing.JPanel();
+        jLabel19 = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
         jPanel14 = new javax.swing.JPanel();
         jButton5 = new javax.swing.JButton();
@@ -1338,7 +1382,7 @@ private void prepareChart(){
             .addContainerGap()
             .addGroup(jPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                 .addComponent(BtnRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
             .addContainerGap())
     );
     jPanel15Layout.setVerticalGroup(
@@ -1350,28 +1394,110 @@ private void prepareChart(){
             .addComponent(BtnRefresh))
     );
 
+    jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(resourceMap.getString("jPanel5.border.title"))); // NOI18N
+    jPanel5.setName("jPanel5"); // NOI18N
+
+    jRadioButton1.setText(resourceMap.getString("jRadioButton1.text")); // NOI18N
+    jRadioButton1.setName("jRadioButton1"); // NOI18N
+    jRadioButton1.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jRadioButton1ActionPerformed(evt);
+        }
+    });
+
+    jRadioButton2.setText(resourceMap.getString("jRadioButton2.text")); // NOI18N
+    jRadioButton2.setName("jRadioButton2"); // NOI18N
+    jRadioButton2.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jRadioButton2ActionPerformed(evt);
+        }
+    });
+
+    jPanel18.setName("jPanel18"); // NOI18N
+    jPanel18.setLayout(new java.awt.GridBagLayout());
+
+    jLabel18.setText(resourceMap.getString("jLabel18.text")); // NOI18N
+    jLabel18.setIconTextGap(0);
+    jLabel18.setMinimumSize(null);
+    jLabel18.setName("jLabel18"); // NOI18N
+    jLabel18.setPreferredSize(null);
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.weightx = 1.0;
+    gridBagConstraints.weighty = 1.0;
+    jPanel18.add(jLabel18, gridBagConstraints);
+
+    jPanel19.setName("jPanel19"); // NOI18N
+    jPanel19.setLayout(new java.awt.GridBagLayout());
+
+    jLabel19.setText(resourceMap.getString("jLabel19.text")); // NOI18N
+    jLabel19.setIconTextGap(0);
+    jLabel19.setName("jLabel19"); // NOI18N
+    gridBagConstraints = new java.awt.GridBagConstraints();
+    gridBagConstraints.weightx = 1.0;
+    gridBagConstraints.weighty = 1.0;
+    jPanel19.add(jLabel19, gridBagConstraints);
+
+    javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+    jPanel5.setLayout(jPanel5Layout);
+    jPanel5Layout.setHorizontalGroup(
+        jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(jPanel5Layout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jRadioButton1)
+                .addComponent(jRadioButton2)
+                .addGroup(jPanel5Layout.createSequentialGroup()
+                    .addGap(21, 21, 21)
+                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel19, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 324, Short.MAX_VALUE)
+                        .addComponent(jPanel18, javax.swing.GroupLayout.DEFAULT_SIZE, 324, Short.MAX_VALUE))))
+            .addContainerGap())
+    );
+    jPanel5Layout.setVerticalGroup(
+        jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(jPanel5Layout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(jRadioButton1)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+            .addComponent(jRadioButton2)
+            .addGap(7, 7, 7)
+            .addComponent(jPanel18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+            .addComponent(jPanel19, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addContainerGap(40, Short.MAX_VALUE))
+    );
+
+    jPanel5Layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jPanel18, jPanel19});
+
     javax.swing.GroupLayout jPanel12Layout = new javax.swing.GroupLayout(jPanel12);
     jPanel12.setLayout(jPanel12Layout);
     jPanel12Layout.setHorizontalGroup(
         jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(jPanel12Layout.createSequentialGroup()
             .addContainerGap()
-            .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(BtnDownloadEvents, javax.swing.GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE)
-                .addComponent(jPanel15, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addContainerGap())
+            .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(jPanel12Layout.createSequentialGroup()
+                    .addComponent(jPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addContainerGap())
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel12Layout.createSequentialGroup()
+                    .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(jPanel5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(BtnDownloadEvents, javax.swing.GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE))
+                    .addGap(469, 469, 469))))
     );
 
-    jPanel12Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {BtnDownloadEvents, jPanel15});
+    jPanel12Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {BtnDownloadEvents, jPanel15, jPanel5});
 
     jPanel12Layout.setVerticalGroup(
         jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(jPanel12Layout.createSequentialGroup()
             .addContainerGap()
             .addComponent(jPanel15, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGap(17, 17, 17)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
+            .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(BtnDownloadEvents, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addContainerGap(279, Short.MAX_VALUE))
+            .addGap(110, 110, 110))
     );
 
     jTabbedPane1.addTab(resourceMap.getString("jPanel12.TabConstraints.tabTitle"), jPanel12); // NOI18N
@@ -1621,7 +1747,7 @@ private void prepareChart(){
         .addGroup(jPanel9Layout.createSequentialGroup()
             .addGap(52, 52, 52)
             .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(lblStatus, javax.swing.GroupLayout.DEFAULT_SIZE, 983, Short.MAX_VALUE)
+                .addComponent(lblStatus, javax.swing.GroupLayout.DEFAULT_SIZE, 977, Short.MAX_VALUE)
                 .addGroup(jPanel9Layout.createSequentialGroup()
                     .addComponent(jLabel4)
                     .addGap(18, 18, 18)
@@ -1899,6 +2025,9 @@ private void prepareChart(){
 
     private void BtnDownloadEventsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnDownloadEventsActionPerformed
         sharedData.event_downloaded = false;
+        if(!jRadioButton1.isSelected()){
+            
+        }
         Thread get_events = new Thread(new Runnable() {
 
             public void run()
@@ -2364,6 +2493,16 @@ private void cpuselectCmbBxActionPerformed(java.awt.event.ActionEvent evt) {//GE
     
 }//GEN-LAST:event_cpuselectCmbBxActionPerformed
 
+private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton1ActionPerformed
+        jPanel18.setEnabled(!jRadioButton1.isSelected());
+        jPanel19.setEnabled(!jRadioButton1.isSelected());
+}//GEN-LAST:event_jRadioButton1ActionPerformed
+
+private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton2ActionPerformed
+        jPanel18.setEnabled(jRadioButton2.isSelected());
+        jPanel19.setEnabled(jRadioButton2.isSelected());
+}//GEN-LAST:event_jRadioButton2ActionPerformed
+
     public boolean ExportPDF(String path){
         
         
@@ -2703,6 +2842,8 @@ private void cpuselectCmbBxActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -2723,13 +2864,18 @@ private void cpuselectCmbBxActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JPanel jPanel15;
     private javax.swing.JPanel jPanel16;
     private javax.swing.JPanel jPanel17;
+    private javax.swing.JPanel jPanel18;
+    private javax.swing.JPanel jPanel19;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
+    private javax.swing.JRadioButton jRadioButton1;
+    private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTabbedPane jTabbedPane1;
