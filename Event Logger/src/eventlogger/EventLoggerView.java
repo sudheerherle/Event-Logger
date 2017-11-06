@@ -9,12 +9,19 @@ import com.healthmarketscience.jackcess.Database;
 import com.healthmarketscience.jackcess.DatabaseBuilder;
 import com.healthmarketscience.jackcess.Table;
 import com.healthmarketscience.jackcess.TableBuilder;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfTemplate;
+import com.lowagie.text.pdf.PdfWriter;
 import eventlogger.common.SharedData;
 import eventlogger.fileutilities.ExtensionFileFilter;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -24,6 +31,8 @@ import java.awt.print.PrinterException;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -62,6 +71,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+//import javax.swing.text.Document;
 import org.apache.pdfbox.PDFBox;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -2416,7 +2426,7 @@ private void prepareChart(){
             fullPath=fullPath.concat(".pdf");
         }
         fullPath = fullPath.replace("\\", "/");
-        if(ExportPDF(fullPath)==false){
+        if(exportPDF1(fullPath)==false){
             JOptionPane.showMessageDialog(EventLoggerApp.getApplication().getView().getFrame(), "Failed to create PDF file.","Error",  JOptionPane.ERROR_MESSAGE);
         }
         else {
@@ -2528,6 +2538,36 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         System.out.println("Exception is: ");
         }
         return retval;
+
+    }
+    
+    private boolean exportPDF1(String path){
+        Document document = new Document(PageSize.A4.rotate()) {};
+        PdfWriter writer = null;
+        try {
+            try {
+                writer = PdfWriter.getInstance(document, new FileOutputStream("C:\\jTable.pdf"));
+            } catch (DocumentException ex) {
+                Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        document.open();
+        PdfContentByte cb = writer.getDirectContent();
+        cb.saveState();
+
+        PdfTemplate pdfTemplate = cb.createTemplate(jTable1.getWidth(), jTable1.getHeight());
+        Graphics2D g2 = pdfTemplate.createGraphics(jTable1.getWidth(), jTable1.getHeight());
+        /*g2.setColor(Color.BLACK);
+        g2.drawRect(x-2, y-2, table.getWidth()+2, table.getHeight()+2);*/
+        jTable1.print(g2);
+//        System.out.println("x="+x + "," + "y=" + y);
+        cb.addTemplate(pdfTemplate, 10, 100);
+        g2.dispose();
+        cb.restoreState();
+        return true;   
 
     }
     
