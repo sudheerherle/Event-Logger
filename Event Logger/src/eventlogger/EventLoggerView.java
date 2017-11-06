@@ -696,7 +696,8 @@ private void prepareChart(){
             case 3:
             this.cpu_Addrs = DF_recieved.CPU_address;
             this.unit_type = (int)DF_recieved.data[0];
-            this.Network_ID = Long.toHexString((long)DF_recieved.data[1]);
+            this.Network_ID = Long.toHexString(0xff & (long)DF_recieved.data[1]);
+            this.Network_ID = "0x"+ this.Network_ID.toUpperCase();
             
             UpdateStatusPanel();
             retval = true;
@@ -1464,7 +1465,7 @@ private void prepareChart(){
             .addComponent(jPanel18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
             .addComponent(jPanel19, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addContainerGap(40, Short.MAX_VALUE))
+            .addContainerGap(37, Short.MAX_VALUE))
     );
 
     jPanel5Layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jPanel18, jPanel19});
@@ -1475,15 +1476,17 @@ private void prepareChart(){
         jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(jPanel12Layout.createSequentialGroup()
             .addContainerGap()
-            .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+            .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel12Layout.createSequentialGroup()
-                    .addComponent(jPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addContainerGap())
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel12Layout.createSequentialGroup()
-                    .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(jPanel5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(BtnDownloadEvents, javax.swing.GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE))
-                    .addGap(469, 469, 469))))
+                    .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(jPanel12Layout.createSequentialGroup()
+                            .addComponent(jPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                    .addGap(457, 457, 457))
+                .addGroup(jPanel12Layout.createSequentialGroup()
+                    .addComponent(BtnDownloadEvents, javax.swing.GroupLayout.PREFERRED_SIZE, 361, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(457, Short.MAX_VALUE))))
     );
 
     jPanel12Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {BtnDownloadEvents, jPanel15, jPanel5});
@@ -1493,11 +1496,11 @@ private void prepareChart(){
         .addGroup(jPanel12Layout.createSequentialGroup()
             .addContainerGap()
             .addComponent(jPanel15, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(BtnDownloadEvents, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGap(110, 110, 110))
+            .addContainerGap(122, Short.MAX_VALUE))
     );
 
     jTabbedPane1.addTab(resourceMap.getString("jPanel12.TabConstraints.tabTitle"), jPanel12); // NOI18N
@@ -2025,8 +2028,13 @@ private void prepareChart(){
 
     private void BtnDownloadEventsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnDownloadEventsActionPerformed
         sharedData.event_downloaded = false;
-        if(!jRadioButton1.isSelected()){
-            
+        if(jRadioButton2.isSelected() && from_model.getValue()!=null && from_model.getValue().after(to_model.getValue())){
+                JOptionPane.showMessageDialog(this.getFrame(), "'From' date cannot be greater than 'To' date", "Wrong dates", JOptionPane.ERROR_MESSAGE);
+                return;
+        }
+        if(from_model.getValue()==null){
+            JOptionPane.showMessageDialog(this.getFrame(), "'From' date is required", "Wrong dates", JOptionPane.ERROR_MESSAGE);
+                return;
         }
         Thread get_events = new Thread(new Runnable() {
 
@@ -2079,11 +2087,7 @@ private void prepareChart(){
         jTable1.setModel(model);
         Buttons(false,false);
         jTable1.setAutoResizeMode(jTable1.AUTO_RESIZE_OFF);
-//        tabHandle.removeAllRows();
-        //tabHandle.removeAllColumns();        
-//        fillColoumns(tableColumns);
         String[] StringToDisplay = new String[tableColumns.length];
-//        TblData.doLayout();
         progressBar.setIndeterminate(false);
         event_list = sharedData.get_logged_events();
         if(sharedData.event_downloaded && event_list.size()==0){
@@ -2105,51 +2109,27 @@ private void prepareChart(){
         tca.setColumnHeaderIncluded(false);
         Stop_Updating = false;
         controlAllButtons(false);
+        if(jRadioButton2.isSelected()){
+            {
+               LinkedList<EventDetails> temp_event_list = new LinkedList<EventDetails>();
+               for(int p=0; p< event_list.size(); p++){
+                   String d = event_list.get(p).date_time;
+                   Date event_date = new Date(d);
+                   long from_time = from_model.getValue().getTime() - (1000* 60 * 60 *12);
+                   long event_time = event_date.getTime();
+                   long to_time = to_model.getValue().getTime() + (1000* 60 * 60 *12);
+                   
+                   if(event_time > from_time && event_time < to_time){
+                       temp_event_list.add(event_list.get(p));
+                   }
+               } 
+               event_list = temp_event_list;
+            }//
+        }
         lblStatus.setForeground(Color.BLUE);
         TableSwingWorker worker = new TableSwingWorker(cpu);
         worker.execute();
-//        for(int i =0; i<total_events;i++){
-//            EventDetails ed = event_list.get(i);
-//            StringToDisplay[0] = ed.Station_Name;
-//            StringToDisplay[1] = unit_type_txt;//ed.DP_Point;
-//            if(ed.CPU_Addrs == -1){
-//               StringToDisplay[2] = "N/A"; 
-//            }
-//            else StringToDisplay[2] = "CPU-"+Long.toString(ed.CPU_Addrs,10);
-//            StringToDisplay[3] = Long.toString(ed.event_ID);
-//            String event_desc = get_event_desc(ed.event_ID);
-//            StringToDisplay[4] = event_desc;
-//            StringToDisplay[5] = ed.date_time;
-//            StringToDisplay[6] = getString(ed.DS_FWD_Axle_Count);
-//            StringToDisplay[7] = getString(ed.US_FWD_Axle_Count);
-//            StringToDisplay[8] = getString(ed.DS_REV_Axle_Count);
-//            StringToDisplay[9] = getString(ed.US_REV_Axle_Count);
-//            StringToDisplay[10] = "--";
-//            if(cpu.equals("All"))
-////                tabHandle.addRows(StringToDisplay);
-//                new TableSwingWorker(StringToDisplay).execute();
-//            else if(cpu.equals(StringToDisplay[2]))
-////                tabHandle.addRows(StringToDisplay);
-//                new TableSwingWorker(StringToDisplay).execute();         
-//            if(i==0) percent =0;
-//            else percent = (i*100)/total_events;            
-//            new AnswerWorker(percent).execute();
-//            if(Stop_Updating){
-//                break;
-//            }
-//        }
-//        GiveResponse("Logged events have been populated.", Color.BLUE);
-//        controlAllButtons(true);
-//        progressBar.setValue(0); 
-//        controlAllButtons(true);
-//        try {
-//            Thread.sleep(1000);
-//        } catch (InterruptedException ex) {
-//            Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
-//        }        
-//        TableColumnAdjustment tca = new TableColumnAdjustment( jTable1);
-        tca.adjustColumns();  
-//        model.fireTableDataChanged();
+        tca.adjustColumns();
     }
     
     class RowData {

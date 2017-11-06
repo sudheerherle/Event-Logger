@@ -31,9 +31,13 @@ public class HighlightRenderer extends DefaultTableCellRenderer {
                      ||value.toString().contains("Direct")
                      ||value.toString().contains("Pulsating")
                      ||value.toString().contains("NOT Detecting")
-                     ||value.toString().contains("Influence")){
+                     ||value.toString().contains("Influence")
+                     ||value.toString().contains("Theft")
+                     ||value.toString().contains("Door Open")
+                     ||value.toString().contains("BAD")){
                 setForeground(Color.RED);
             }else if(value.toString().contains("Clear")
+                    || value.toString().contains("Restored")
                     ){
                 setForeground(Color.GREEN);
             }else if(value.toString().contains("Missing")){
