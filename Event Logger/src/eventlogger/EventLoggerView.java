@@ -677,12 +677,19 @@ private void prepareChart(){
             mktime = mktime * 1000;
             DateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
             Date rtc_date_time = new Date(mktime);
+            Date time_now = new Date();
+            long timenow = time_now.getTime();
+            long rtctime = rtc_date_time.getTime();
+            long diff = timenow - rtctime;            
             RTC_dateLbl.setText(df.format(rtc_date_time));
             DateFormat df_time = new SimpleDateFormat("HH:mm:ss");
             timelbl1.setText((df_time.format(rtc_date_time)));      
             this.getFrame().repaint();
             this.getFrame().validate();
             GiveResponse("Updated the date and time from Event logger", Color.BLUE);
+            if(diff > 60000 || diff < -60000){
+                JOptionPane.showMessageDialog(this.getFrame(), "Time mismatch of more than a minute is observed.\nPlease consider setting correct time.", "Time mismatch", JOptionPane.ERROR_MESSAGE);
+            }
             retval = true;
             break;   
             
