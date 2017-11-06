@@ -2039,7 +2039,7 @@ private void prepareChart(){
                 JOptionPane.showMessageDialog(this.getFrame(), "'From' date cannot be greater than 'To' date", "Wrong dates", JOptionPane.ERROR_MESSAGE);
                 return;
         }
-        if(from_model.getValue()==null){
+        if(jRadioButton2.isSelected() && from_model.getValue()==null){
             JOptionPane.showMessageDialog(this.getFrame(), "'From' date is required", "Wrong dates", JOptionPane.ERROR_MESSAGE);
                 return;
         }
