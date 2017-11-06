@@ -13,6 +13,7 @@ import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 import eventlogger.common.SharedData;
@@ -26,6 +27,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.LayoutManager;
+import java.awt.Shape;
 import java.awt.Toolkit;
 import java.awt.print.PrinterException;
 import java.io.BufferedInputStream;
@@ -2426,7 +2428,7 @@ private void prepareChart(){
             fullPath=fullPath.concat(".pdf");
         }
         fullPath = fullPath.replace("\\", "/");
-        if(exportPDF1(fullPath)==false){
+        if(putToPDF(fullPath)==false){
             JOptionPane.showMessageDialog(EventLoggerApp.getApplication().getView().getFrame(), "Failed to create PDF file.","Error",  JOptionPane.ERROR_MESSAGE);
         }
         else {
@@ -2546,7 +2548,7 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         PdfWriter writer = null;
         try {
             try {
-                writer = PdfWriter.getInstance(document, new FileOutputStream("C:\\jTable.pdf"));
+                writer = PdfWriter.getInstance(document, new FileOutputStream(path));
             } catch (DocumentException ex) {
                 Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -2557,33 +2559,36 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         document.open();
         PdfContentByte cb = writer.getDirectContent();
         cb.saveState();
+      Graphics2D g2 = cb.createGraphics(500, 500);
 
-        PdfTemplate pdfTemplate = cb.createTemplate(jTable1.getWidth(), jTable1.getHeight());
-        Graphics2D g2 = pdfTemplate.createGraphics(jTable1.getWidth(), jTable1.getHeight());
-        /*g2.setColor(Color.BLACK);
-        g2.drawRect(x-2, y-2, table.getWidth()+2, table.getHeight()+2);*/
-        jTable1.print(g2);
-//        System.out.println("x="+x + "," + "y=" + y);
-        cb.addTemplate(pdfTemplate, 10, 100);
-        g2.dispose();
-        cb.restoreState();
+      Shape oldClip = g2.getClip();
+      g2.clipRect(10, 0, 500, 500);
+
+      jTable1.print(g2);
+      g2.setClip(oldClip);
+
+      g2.dispose();
+      cb.restoreState();
         return true;   
 
     }
     
-       private static void drawTable( PDPage page, PDPageContentStream contentStream) {
+       private void drawTable( PDPage page, PDPageContentStream contentStream) {
         try {
             float y = 650;
             float margin = 130;
-            String[] content = {"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Remote Forward","Local Reverse","Remote Reverse"};
-        
-            final int rows = content.length;
+            String[] column_headers = new String[jTable1.getColumnCount()];//{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Remote Forward","Local Reverse","Remote Reverse"};
+//            jTable1.getco
+            final int rows = jTable1.getRowCount();
             final int cols = 10;
             final float rowHeight = 22f;
             final float tableWidth =  900.0f;
             final float tableHeight = rowHeight * rows;
             final float cellMargin=1f;
 
+            for(int c =0; c<column_headers.length;c++){
+                column_headers[c] = jTable1.getColumnName(c);
+            }
             //draw the rows
             float nexty = y ;
             for (int i = 0; i <= rows; i++)
@@ -2592,7 +2597,7 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                 nexty-= rowHeight;
             }
 
-            float colWidthX [] = {200,70,0};
+            float colWidthX [] = {100,100,100,100,100,100,100,100,100,100,100};
 
             //draw the columns
             float nextx = margin;
@@ -2608,11 +2613,11 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             //textx = margin+cellMargin;
 
 
-                for(int j = 0 ; j < rows; j++) {
+                for(int j = 0 ; j < 7; j++) {
                     contentStream.beginText();
                     contentStream.moveTextPositionByAmount(textx,texty);
 
-                    contentStream.drawString(content[j]);
+                    contentStream.drawString(column_headers[j]);
                     contentStream.endText();
                     textx += colWidthX[0]+9;
                     contentStream.beginText();
@@ -2660,6 +2665,34 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         }
     }
 
+   public boolean putToPDF(String path){
+     try {
+            Document doc = new Document();
+            PdfWriter.getInstance(doc, new FileOutputStream(path));
+            doc.open();
+            PdfPTable pdfTable = new PdfPTable(jTable1.getColumnCount());
+            //adding table headers
+            for (int i = 0; i < jTable1.getColumnCount(); i++) {
+                pdfTable.addCell(jTable1.getColumnName(i));
+            }
+            //extracting data from the JTable and inserting it to PdfPTable
+            for (int rows = 0; rows < jTable1.getRowCount() - 1; rows++) {
+                for (int cols = 0; cols < jTable1.getColumnCount(); cols++) {
+                    pdfTable.addCell(jTable1.getModel().getValueAt(rows, cols).toString());
+
+                }
+            }
+            doc.add(pdfTable);
+            doc.close();
+            System.out.println("done");
+        } catch (DocumentException ex) {
+            Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
+        }
+     return true;
+}
+       
     public boolean ExportAccess(String path){
         boolean retval = false;
         try {
