@@ -9,10 +9,22 @@ import com.healthmarketscience.jackcess.Database;
 import com.healthmarketscience.jackcess.DatabaseBuilder;
 import com.healthmarketscience.jackcess.Table;
 import com.healthmarketscience.jackcess.TableBuilder;
+import com.lowagie.text.BadElementException;
+import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.Element;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.HeaderFooter;
+import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.PdfCell;
 import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
@@ -25,7 +37,6 @@ import java.awt.Desktop;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.LayoutManager;
 import java.awt.Shape;
 import java.awt.Toolkit;
@@ -37,6 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -162,7 +174,7 @@ public class EventLoggerView extends FrameView {
 //        final CTableHandler model = new CTableHandler(TblData);
 //                JTable table = new JTable(model);
         usb.setSelected(true);
-        Image mainLogo = Toolkit.getDefaultToolkit().getImage(EventLoggerView.class.getResource("resources/insys_logo_w200.png"));
+        java.awt.Image mainLogo = Toolkit.getDefaultToolkit().getImage(EventLoggerView.class.getResource("resources/insys_logo_w200.png"));
         getFrame().setIconImage(mainLogo);
         DateFiled.setDate(new Date());
         Icon setting = getResourceMap().getIcon("Setting");
@@ -715,8 +727,7 @@ private void prepareChart(){
             case 3:
             this.cpu_Addrs = DF_recieved.CPU_address;
             this.unit_type = (int)DF_recieved.data[0];
-            this.Network_ID = Long.toHexString(0xff & (long)DF_recieved.data[1]);
-            this.Network_ID = "0x"+ this.Network_ID.toUpperCase();
+            this.Network_ID = Long.toString(0xff & (long)DF_recieved.data[1]);
             
             UpdateStatusPanel();
             retval = true;
@@ -2670,15 +2681,109 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             Document doc = new Document();
             PdfWriter.getInstance(doc, new FileOutputStream(path));
             doc.open();
+//            Image mainLogo = Toolkit.getDefaultToolkit().getImage(EventLoggerView.class.getResource("resources/insys_logo_w200.png"));
+            
+            Image logo = null;
+            try {
+                
+                final URL url = EventLoggerView.class.getProtectionDomain().getCodeSource().getLocation();
+                String jarPath=null;
+              try {
+                    jarPath = new File(url.toURI()).getAbsolutePath();
+                } catch (URISyntaxException ex) {
+//                    Exceptions.printStackTrace(ex);
+                }
+                String pt=jarPath;
+                pt = pt.replace("EventLogger.jar", "insys_logo_w200.png");
+                System.out.println("jar path: "+pt);
+                logo = Image.getInstance(pt);// E:\GitHub\Event-Logger\Event Logger\src\eventlogger\resources
+            } catch (BadElementException ex) {
+                Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            logo.setAlignment(Image.MIDDLE);
+            logo.scaleAbsoluteHeight(20);
+            logo.scaleAbsoluteWidth(20);
+            logo.scalePercent(20);
+            Chunk chunk = new Chunk(logo, 0, -15);
+            HeaderFooter header = new HeaderFooter(new Phrase(chunk), false);
+            header.setAlignment(Element.ALIGN_CENTER);
+            header.setBorder(Rectangle.NO_BORDER);
+            doc.setHeader(header);
+            doc.add(logo);
+            Font titleFont = FontFactory.getFont(FontFactory.TIMES_BOLD, 14, Color.BLUE);
+            Paragraph docTitle = new Paragraph("Insys Digital Systems - Event logger\n", titleFont);
+            doc.add(docTitle);
+            Font subtitleFont = FontFactory.getFont("Times Roman", 9, Color.BLACK);
+            
+            Date ti = new Date();
+            SimpleDateFormat sdf  = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z");
+            String time = sdf.format(ti);
+            Paragraph subTitle = new Paragraph("Time of log: "+time+"\n\n", subtitleFont);
+            doc.add(subTitle);
+            doc.addTitle("Event logger");
             PdfPTable pdfTable = new PdfPTable(jTable1.getColumnCount());
+            int[] t = new int[jTable1.getColumnCount()];
+            for(int h=0;h<t.length;h++){
+                t[h] = 30;
+            }
+            t[4] = 60;
+            t[5] = 60;
+            pdfTable.setWidths(t);
             //adding table headers
+            Font headerfont = FontFactory.getFont(FontFactory.TIMES_BOLD, 10, Color.BLUE);
+            Font rowfont = FontFactory.getFont(FontFactory.TIMES, 8, Color.BLACK);            
+            Paragraph col = null;
             for (int i = 0; i < jTable1.getColumnCount(); i++) {
-                pdfTable.addCell(jTable1.getColumnName(i));
+                col = new Paragraph(jTable1.getColumnName(i), headerfont);
+                PdfPCell col_headers = new PdfPCell(col);
+                col_headers.setColspan(3);
+                col_headers.setBorder(PdfPCell.NO_BORDER);
+                col_headers.setHorizontalAlignment(Element.ALIGN_JUSTIFIED_ALL);
+                pdfTable.addCell(col);
             }
             //extracting data from the JTable and inserting it to PdfPTable
+            
             for (int rows = 0; rows < jTable1.getRowCount() - 1; rows++) {
                 for (int cols = 0; cols < jTable1.getColumnCount(); cols++) {
-                    pdfTable.addCell(jTable1.getModel().getValueAt(rows, cols).toString());
+                    String value = jTable1.getModel().getValueAt(rows, cols).toString();
+                    
+                    if(value.toString().contains("Failure")
+                     ||value.toString().contains("Defective")
+                     ||value.toString().contains("Failed")
+                     ||value.toString().contains("Mismatch")
+                     ||value.toString().contains("Direct")
+                     ||value.toString().contains("Pulsating")
+                     ||value.toString().contains("NOT Detecting")
+                     ||value.toString().contains("Influence")
+                     ||value.toString().contains("Theft")
+                     ||value.toString().contains("Door Open")
+                     ||value.toString().contains("BAD")){                       
+                         rowfont = FontFactory.getFont(FontFactory.TIMES, 8, Color.RED);           
+                    }else if(value.toString().contains("Clear")
+                        || value.toString().contains("Restored")
+                    ){
+                        rowfont = FontFactory.getFont(FontFactory.TIMES, 8, Color.GREEN);           
+                    }else if(value.toString().contains("Missing")){
+                        rowfont = FontFactory.getFont(FontFactory.TIMES, 8, Color.PINK); 
+                    }else if(value.toString().contains("Normal")){
+                        rowfont = FontFactory.getFont(FontFactory.TIMES, 8, Color.BLUE);
+                    }else if(value.toString().contains("Occupied")){
+                        rowfont = FontFactory.getFont(FontFactory.TIMES, 8, Color.ORANGE);
+                    }
+                    else{
+                        rowfont = FontFactory.getFont(FontFactory.TIMES, 8, Color.BLACK);           
+                    }
+                    col = new Paragraph(jTable1.getModel().getValueAt(rows, cols).toString(), rowfont);
+                    
+                    PdfPCell row_items = new PdfPCell(col);
+                    row_items.setColspan(3);
+                    row_items.setBorder(PdfPCell.NO_BORDER);
+                    row_items.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    pdfTable.addCell(col);
 
                 }
             }
