@@ -159,19 +159,28 @@ public class EventLoggerView extends FrameView {
     private String[] tableColumns = {"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Remote Forward","Local Reverse","Remote Reverse","Total Train Wheels"};
     private  MyTableModel model = new MyTableModel();    
     private SingleFrameApplication sfa = null;
+    private long rtctime_diff;
     public EventLoggerView(SingleFrameApplication app) {
         super(app);
         sfa = app;
         initComponents();  
+        
         jTabbedPane1.addChangeListener(new ChangeListener() {
         public void stateChanged(ChangeEvent e) {
             int click = jTabbedPane1.getSelectedIndex();
             System.out.println("Tab: " + click);
             if(click == 6){
-                jButton1.doClick();
+                new ChartWorker().execute();    
             }else if(click == 2){
                 Thread thread = new Thread(new UpdateRTCTime(sfa));
                 thread.start();
+            }else if(click == 4){
+                if(sharedData.connectedToHardware && (sharedData.event_list == null || sharedData.event_list.size() == 0)){
+                    int i = JOptionPane.showConfirmDialog(EventLoggerApp.getApplication().getMainFrame(), "Do you want to download the events from the event logger?", "Download events", JOptionPane.YES_NO_OPTION);
+                if(i==0){
+                    BtnDownloadEvents.doClick();
+                }
+                }
             }
         }
         });
@@ -220,6 +229,19 @@ public class EventLoggerView extends FrameView {
             public void run() {
             timelbl.setText(sharedData.getDateTime());
             datelbl.setText(sharedData.getDate());
+            if(rtctime_diff!=0){
+                Date dt = new Date();
+                long timenow = dt.getTime();
+                DateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
+                rtctime_diff = rtctime_diff + 1000;
+                String dmy = df.format(rtctime_diff);
+
+                DateFormat h = new SimpleDateFormat("HH:mm:ss");   
+                String hms = h.format(rtctime_diff);
+
+                RTC_dateLbl.setText(dmy);
+                timelbl1.setText(hms);
+            }
             }
          };
          
@@ -284,6 +306,7 @@ public class EventLoggerView extends FrameView {
         Timer timer1 = new Timer();
         timer1.scheduleAtFixedRate(Com_Blinker_Task, 0, 300);
         jTabbedPane1.setSelectedIndex(0);
+        BtnConnect.doClick();
         
 //        UtilDateModel model = new UtilDateModel();
 //model.setDate(20,04,2014);
@@ -311,7 +334,15 @@ public class EventLoggerView extends FrameView {
         bg.add(jRadioButton1);
         bg.add(jRadioButton2);
         jRadioButton1.setSelected(true);
-        
+        if(sharedData.event_list == null || sharedData.event_list.size() == 0){
+            SwingUtilities.invokeLater(
+              new Runnable() {
+                public void run() {
+                  jTabbedPane1.setSelectedIndex(1);
+                }
+              }
+            );
+        }
     }
 
      public boolean SendPacketRecieveResponse(DataFrame df){
@@ -730,7 +761,8 @@ private void prepareChart(){
             Date time_now = new Date();
             long timenow = time_now.getTime();
             long rtctime = rtc_date_time.getTime();
-            long diff = timenow - rtctime;            
+            long diff = timenow - rtctime;    
+            rtctime_diff = rtctime;
             RTC_dateLbl.setText(df.format(rtc_date_time));
             DateFormat df_time = new SimpleDateFormat("HH:mm:ss");
             timelbl1.setText((df_time.format(rtc_date_time)));      
