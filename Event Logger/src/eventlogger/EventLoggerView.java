@@ -112,9 +112,11 @@ public class EventLoggerView extends FrameView {
     private SerialHelper sh = new SerialHelper();
     private static byte[] poll_port = new byte[]{0x1,0x0};
     private  TimerTask Blinker_Task ;
+    String fullPath = "";
     UtilDateModel from_model = new UtilDateModel();
     UtilDateModel to_model = new UtilDateModel();
     private TimerTask Timeout_task;
+    boolean isDebug = false;
     private TimerTask Write_Timeout_task;
     private boolean time_out = false;
     private SerialHelper serial_helper;
@@ -161,6 +163,16 @@ public class EventLoggerView extends FrameView {
         super(app);
 
         initComponents();  
+        jTabbedPane1.addChangeListener(new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+            System.out.println("Tab: " + jTabbedPane1.getSelectedIndex());
+            if(jTabbedPane1.getSelectedIndex() == 6){
+                jButton1.doClick();
+            }
+        }
+        });
+        isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
+        getInputArguments().toString().indexOf("jdwp") >= 0;
 //        JFrame frame = new JFrame();
         
           model = new MyTableModel();
@@ -525,11 +537,21 @@ private void prepareChart(){
         LinkedList<EventDetails> ed = sharedData.get_logged_events();
         for(int i=0;i<ed.size();i++){
             evt_desc  = get_event_desc(ed.get(i).event_ID);
-            if(evt_desc.contains("MISSING")){
+            if(evt_desc.contains("Missing")){
                 missing++;
-            }else if(evt_desc.contains("FAILURE") || evt_desc.contains("FAILED")){
+            }else if(evt_desc.contains("Failure")
+                    ||evt_desc.contains("Defective")
+                     ||evt_desc.contains("Failed")
+                     ||evt_desc.contains("Mismatch")
+                     ||evt_desc.contains("Direct")
+                     ||evt_desc.contains("Pulsating")
+                     ||evt_desc.contains("NOT Detecting")
+                     ||evt_desc.contains("Influence")
+                     ||evt_desc.contains("Theft")
+                     ||evt_desc.contains("Door Open")
+                     ||evt_desc.contains("BAD")){
                 error++;
-            }else if(evt_desc.contains("NORMAL")||evt_desc.contains("CLEAR")){
+            }else if(evt_desc.contains("Normal")||evt_desc.contains("Clear")){
                 normal++;
             }
         }
@@ -2355,9 +2377,33 @@ private void prepareChart(){
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        prepareChart();
+         
+        new ChartWorker().execute();       
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    class ChartWorker extends SwingWorker<Integer, Integer>
+    {
+        protected Integer doInBackground() throws Exception
+        {
+            // Do a time-consuming task.
+            GiveResponse("Updating chart. Please wait...", Color.BLUE);
+            Thread.sleep(1000);
+            prepareChart();
+            return 42;
+        }
+
+        protected void done()
+        {
+            try
+            {
+                GiveResponse("Chart refreshed.", Color.BLUE);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
     private void stnNameTxtFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_stnNameTxtFieldKeyReleased
          if(stnNameTxtField.getText().equals("")){
             EnterStnNameHint.setVisible(true);
@@ -2389,23 +2435,33 @@ private void prepareChart(){
 
         fileName=fileName.replace(File.separatorChar, '\\');
 
-        String fullPath = directory + "\\"+fileName;
+        fullPath = directory + "\\"+fileName;
         controlAllButtons(false);
         GiveResponse("Exporting to Microsoft Access file...", Color.BLACK);
         if(!fullPath.toLowerCase().contains(".mdb")){
             fullPath=fullPath.concat(".mdb");
         }
         fullPath = fullPath.replace("\\", "/");
-        if(ExportAccess(fullPath)==false){
+        Thread te = new Thread(new Runnable() {
+
+            public void run()
+            {
+                controlAllButtons(false);
+                GiveResponse("Exporting to MS Access takes few minutes. Please wait...", Color.BLUE);
+                if(ExportAccess(fullPath)==false){
             JOptionPane.showMessageDialog(EventLoggerApp.getApplication().getView().getFrame(), "Failed to create Microsoft Access file.","Error",  JOptionPane.ERROR_MESSAGE);
-        }
-        else {
-            fullPath = fullPath.replace("\\", "/");
-            fullPath = fullPath.replace("//", "/");
-            if(!fullPath.endsWith(".mdb")) fullPath = fullPath.concat(".mdb");
-            GiveResponse("Microsoft Access file successfully created at "+ fullPath, Color.BLUE);
-        }
+            }
+            else {
+                fullPath = fullPath.replace("\\", "/");
+                fullPath = fullPath.replace("//", "/");
+                if(!fullPath.endsWith(".mdb")) fullPath = fullPath.concat(".mdb");
+                GiveResponse("Microsoft Access file successfully created at "+ fullPath, Color.BLUE);
+            }
          controlAllButtons(true);
+            }
+            });
+            te.start();
+        
         }
         
     }//GEN-LAST:event_jButton6ActionPerformed
@@ -2432,23 +2488,35 @@ private void prepareChart(){
 
         fileName=fileName.replace(File.separatorChar, '\\');
 
-        String fullPath = directory + "\\"+fileName;
-        controlAllButtons(false);
+        fullPath = directory + "\\"+fileName;
+        
         GiveResponse("Exporting to PDF file...", Color.BLACK);
         if(!fullPath.toLowerCase().contains(".pdf")){
             fullPath=fullPath.concat(".pdf");
         }
+        
         fullPath = fullPath.replace("\\", "/");
-        if(putToPDF(fullPath)==false){
+        Thread get_dac_status = new Thread(new Runnable() {
+
+            public void run()
+            {
+                controlAllButtons(false);
+                GiveResponse("Please wait...", Color.BLUE);
+               
+                 if(putToPDF(fullPath)==false){
             JOptionPane.showMessageDialog(EventLoggerApp.getApplication().getView().getFrame(), "Failed to create PDF file.","Error",  JOptionPane.ERROR_MESSAGE);
-        }
-        else {
-            fullPath = fullPath.replace("\\", "/");
-            fullPath = fullPath.replace("//", "/");
-            if(!fullPath.endsWith(".pdf")) fullPath = fullPath.concat(".pdf");
-            GiveResponse("PDF file successfully created at "+ fullPath, Color.BLUE);
-        }
-         controlAllButtons(true);
+            }
+            else {
+                fullPath = fullPath.replace("\\", "/");
+                fullPath = fullPath.replace("//", "/");
+                if(!fullPath.endsWith(".pdf")) fullPath = fullPath.concat(".pdf");
+                GiveResponse("PDF file successfully created at "+ fullPath, Color.BLUE);
+            }
+         controlAllButtons(true);            
+            }
+            });
+            get_dac_status.start(); 
+        
         }
         
     }//GEN-LAST:event_jButton5ActionPerformed
@@ -2696,6 +2764,9 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                 String pt=jarPath;
                 pt = pt.replace("EventLogger.jar", "insys_logo_w200.png");
                 System.out.println("jar path: "+pt);
+                if(isDebug){
+                    pt = "E:\\GitHub\\Event-Logger\\Event Logger\\src\\eventlogger\\resources\\insys_logo_w200.png";
+                }
                 logo = Image.getInstance(pt);// E:\GitHub\Event-Logger\Event Logger\src\eventlogger\resources
             } catch (BadElementException ex) {
                 Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
