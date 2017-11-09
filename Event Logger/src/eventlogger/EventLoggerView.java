@@ -157,17 +157,21 @@ public class EventLoggerView extends FrameView {
     private String Network_ID="NA";
     private int percent = 0;
     private String[] tableColumns = {"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Remote Forward","Local Reverse","Remote Reverse","Total Train Wheels"};
-    private  MyTableModel model = new MyTableModel();
-    
+    private  MyTableModel model = new MyTableModel();    
+    private SingleFrameApplication sfa = null;
     public EventLoggerView(SingleFrameApplication app) {
         super(app);
-
+        sfa = app;
         initComponents();  
         jTabbedPane1.addChangeListener(new ChangeListener() {
         public void stateChanged(ChangeEvent e) {
-            System.out.println("Tab: " + jTabbedPane1.getSelectedIndex());
-            if(jTabbedPane1.getSelectedIndex() == 6){
+            int click = jTabbedPane1.getSelectedIndex();
+            System.out.println("Tab: " + click);
+            if(click == 6){
                 jButton1.doClick();
+            }else if(click == 2){
+                Thread thread = new Thread(new UpdateRTCTime(sfa));
+                thread.start();
             }
         }
         });
@@ -2018,23 +2022,20 @@ private void prepareChart(){
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
-        Thread set_rtc_time = new Thread(new Runnable() {
-
-            public void run()
-            {                
-                controlAllButtons(false);
-                DataFrame df = new DataFrame();
-                df.CPU_address = cpu_Addrs;
-                df.CMD = GET_RTC_DATE_TIME;
-                df.data = new byte[0];        
-                SendPacketRecieveResponse(df);
-                controlAllButtons(true);
-            }
-        });
-        set_rtc_time.start();
-           
+       Thread thread = new Thread(new UpdateRTCTime(this.sfa));
+        thread.start();       
     }//GEN-LAST:event_jButton12ActionPerformed
 
+    public void UpdateRTC(){
+        controlAllButtons(false);
+        DataFrame df = new DataFrame();
+        df.CPU_address = cpu_Addrs;
+        df.CMD = GET_RTC_DATE_TIME;
+        df.data = new byte[0];        
+        SendPacketRecieveResponse(df);
+        controlAllButtons(true);               
+                     
+    }
     private void ClearAllFields(){
         networkIDField.setText("");
         dpField.setText("");
