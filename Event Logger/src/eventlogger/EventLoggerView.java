@@ -176,6 +176,8 @@ public class EventLoggerView extends FrameView {
                 thread.start();
             }else if(click == 3){
                 RefreshCounts();
+            }else if(click == 1){
+                refreshDACstatus();
             }
             else if(click == 4){
                 if(sharedData.connectedToHardware && (sharedData.event_list == null || sharedData.event_list.size() == 0)){
@@ -2078,7 +2080,11 @@ private void prepareChart(){
         jTextField4.setText("");
     }
     private void BtnGetDACStatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGetDACStatusActionPerformed
-        Thread get_dac_status = new Thread(new Runnable() {
+             refreshDACstatus();             
+    }//GEN-LAST:event_BtnGetDACStatusActionPerformed
+
+    private void refreshDACstatus(){
+            Thread get_dac_status = new Thread(new Runnable() {
 
             public void run()
             {
@@ -2090,10 +2096,8 @@ private void prepareChart(){
                 SendPacketRecieveResponse(df);               
             }
             });
-            get_dac_status.start();            
-             
-    }//GEN-LAST:event_BtnGetDACStatusActionPerformed
-
+            get_dac_status.start();   
+    }
     private void BtnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnRefreshActionPerformed
         RefreshCounts();  
     }//GEN-LAST:event_BtnRefreshActionPerformed
