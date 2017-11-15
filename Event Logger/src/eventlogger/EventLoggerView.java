@@ -174,10 +174,7 @@ public class EventLoggerView extends FrameView {
             }else if(click == 2){
                 Thread thread = new Thread(new UpdateRTCTime(sfa));
                 thread.start();
-            }else if(click == 3){
-                RefreshCounts();
-            }
-            else if(click == 4){
+            }else if(click == 4){
                 if(sharedData.connectedToHardware && (sharedData.event_list == null || sharedData.event_list.size() == 0)){
                     int i = JOptionPane.showConfirmDialog(EventLoggerApp.getApplication().getMainFrame(), "Do you want to download the events from the event logger?", "Download events", JOptionPane.YES_NO_OPTION);
                 if(i==0){
@@ -309,7 +306,6 @@ public class EventLoggerView extends FrameView {
         Timer timer1 = new Timer();
         timer1.scheduleAtFixedRate(Com_Blinker_Task, 0, 300);
         jTabbedPane1.setSelectedIndex(0);
-        if(sharedData.connected==false)
         BtnConnect.doClick();
         
 //        UtilDateModel model = new UtilDateModel();
@@ -2095,10 +2091,6 @@ private void prepareChart(){
     }//GEN-LAST:event_BtnGetDACStatusActionPerformed
 
     private void BtnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnRefreshActionPerformed
-        RefreshCounts();  
-    }//GEN-LAST:event_BtnRefreshActionPerformed
-
-    private void RefreshCounts(){
         Thread get_event_counts = new Thread(new Runnable() {
 
             public void run()
@@ -2116,7 +2108,9 @@ private void prepareChart(){
             }
             });
             get_event_counts.start();     
-    }
+        
+    }//GEN-LAST:event_BtnRefreshActionPerformed
+
     private void BtnDownloadEventsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnDownloadEventsActionPerformed
         sharedData.event_downloaded = false;
         if(jRadioButton2.isSelected() && from_model.getValue()!=null && from_model.getValue().after(to_model.getValue())){
@@ -2139,7 +2133,7 @@ private void prepareChart(){
                 Buttons(false,true);
                 progressBar.setValue(0);
 //                model.removeTableModelListener(jTable1);
-                               
+                jTabbedPane1.setSelectedIndex(4);                
                 sharedData.event_list.clear();
                 Buttons(false,true);
                 DataFrame df = new DataFrame();
@@ -2148,8 +2142,7 @@ private void prepareChart(){
                 df.data = new byte[2];
                 df.data[0] = 100;
                 df.data[1] = 0;
-                SendPacketRecieveResponse(df);   
-                jTabbedPane1.setSelectedIndex(4); 
+                SendPacketRecieveResponse(df);                
 //                Buttons(true,false);
                 }
                   });
@@ -2787,7 +2780,6 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
    public boolean putToPDF(String path){
      try {
             Document doc = new Document();
-            doc.setMargins(18, 18, 36, 36);
             PdfWriter.getInstance(doc, new FileOutputStream(path));
             doc.open();
 //            Image mainLogo = Toolkit.getDefaultToolkit().getImage(EventLoggerView.class.getResource("resources/insys_logo_w200.png"));
@@ -2840,11 +2832,10 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             PdfPTable pdfTable = new PdfPTable(jTable1.getColumnCount());
             int[] t = new int[jTable1.getColumnCount()];
             for(int h=0;h<t.length;h++){
-                t[h] = 40;
+                t[h] = 30;
             }
-            t[1] = 50;
-            t[4] = 120;
-            t[5] = 100;
+            t[4] = 60;
+            t[5] = 60;
             pdfTable.setWidths(t);
             //adding table headers
             Font headerfont = FontFactory.getFont(FontFactory.TIMES_BOLD, 10, Color.BLUE);
