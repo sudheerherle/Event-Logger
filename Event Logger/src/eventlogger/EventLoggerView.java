@@ -3062,23 +3062,23 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             break;
                     
             case 11:
-            unit_type_txt = "4D1s - A";
+            unit_type_txt = "4D1S - A";
             tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Train Wheels"};
             
             break;
                         
             case 12:
-            unit_type_txt = "4D1s - B";
+            unit_type_txt = "4D1S - B";
             tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Train Wheels"};            
             break;
                 
             case 13:
-            unit_type_txt = "4D1s - C";
+            unit_type_txt = "4D1S - C";
             tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Train Wheels"};            
             break;
                     
             case 14:
-            unit_type_txt = "4D1s - D";
+            unit_type_txt = "4D1S - D";
             tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Train Wheels"};
             break;
        }
