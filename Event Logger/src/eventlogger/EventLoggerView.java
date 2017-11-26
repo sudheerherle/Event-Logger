@@ -3044,11 +3044,12 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             
             case 7:
             unit_type_txt = "3D-SF";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","SF Count","S-CF Count","E-CF Count","EF Count","Total Train Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","SF Count","S-CF Count","S-EF Count","EF Count","Total Train Wheels"};
             break;
                 
             case 8:
             unit_type_txt = "3D-EF";
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","SF Count","S-CF Count","E-SF Count","EF Count","Total Train Wheels"};
             break;
                 
             case 9:
