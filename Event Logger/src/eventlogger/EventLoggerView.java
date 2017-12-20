@@ -165,30 +165,30 @@ public class EventLoggerView extends FrameView {
         sfa = app;
         initComponents();  
         
-        jTabbedPane1.addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
-            int click = jTabbedPane1.getSelectedIndex();
-            System.out.println("Tab: " + click);
-            if(click == 6){
-                new ChartWorker().execute();    
-            }else if(click == 2){
-                Thread thread = new Thread(new UpdateRTCTime(sfa));
-                thread.start();
-            }else if(click == 3){
-                RefreshCounts();
-            }else if(click == 1){
-                refreshDACstatus();
-            }
-            else if(click == 4){
-                if(sharedData.connectedToHardware && (sharedData.event_list == null || sharedData.event_list.size() == 0)){
-                    int i = JOptionPane.showConfirmDialog(EventLoggerApp.getApplication().getMainFrame(), "Do you want to download the events from the event logger?", "Download events", JOptionPane.YES_NO_OPTION);
-                if(i==0){
-                    BtnDownloadEvents.doClick();
-                }
-                }
-            }
-        }
-        });
+//        jTabbedPane1.addChangeListener(new ChangeListener() {
+//        public void stateChanged(ChangeEvent e) {
+//            int click = jTabbedPane1.getSelectedIndex();
+//            System.out.println("Tab: " + click);
+//            if(click == 6){
+//                new ChartWorker().execute();    
+//            }else if(click == 2){
+//                Thread thread = new Thread(new UpdateRTCTime(sfa));
+//                thread.start();
+//            }else if(click == 3){
+//                RefreshCounts();
+//            }else if(click == 1){
+//                refreshDACstatus();
+//            }
+//            else if(click == 4){
+//                if(sharedData.connectedToHardware && (sharedData.event_list == null || sharedData.event_list.size() == 0)){
+//                    int i = JOptionPane.showConfirmDialog(EventLoggerApp.getApplication().getMainFrame(), "Do you want to download the events from the event logger?", "Download events", JOptionPane.YES_NO_OPTION);
+//                if(i==0){
+//                    BtnDownloadEvents.doClick();
+//                }
+//                }
+//            }
+//        }
+//        });
         isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
         getInputArguments().toString().indexOf("jdwp") >= 0;
 //        JFrame frame = new JFrame();
@@ -2150,7 +2150,7 @@ private void prepareChart(){
                 df.CPU_address =cpu_Addrs;
                 df.CMD = GET_LOGGED_EVENTS;
                 df.data = new byte[2];
-                df.data[0] = 100;
+                df.data[0] = (byte) 255;
                 df.data[1] = 0;
                 SendPacketRecieveResponse(df);   
                 jTabbedPane1.setSelectedIndex(4); 

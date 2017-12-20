@@ -1,3 +1,9 @@
 *.class
 /Event Logger/build
 /Event Logger/dist
+*.properties
+*.properties
+*.properties
+*.properties
+*.properties
+*.properties
