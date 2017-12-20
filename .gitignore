@@ -7,3 +7,5 @@
 *.properties
 *.properties
 *.properties
+Event Logger/nbproject/private/private.xml
+Event Logger/nbproject/build-impl.xml
