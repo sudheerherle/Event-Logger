@@ -147,6 +147,8 @@ public enum EventDescription {
     EVENT_DS_BLOCK_OCCUPIED_EXIT_CNT(135),
     EVENT_BATTERY_VOLTAGE_HIGH(136),
     EVENT_BATTERY_VOLTAGE_LOW(137),
+	EVENT_BATTERY_VOLTAGE_NORMAL(138),
+	EVENT_RESET_BOX_POWERED_ON(139),
     EVENT_NOT_OCCURRED(255);
         private int val;
         private EventDescription(int val) {
