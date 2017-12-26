@@ -93,13 +93,16 @@ public class HeaderTable extends PdfPageEventHelper{
             logo.scalePercent(20);
             Chunk chunk = new Chunk(logo, 0, -15);
             PdfPCell cell = new PdfPCell(new Phrase(chunk)); 
+            
             float cellheight = 40;
             cell.setFixedHeight(cellheight);
             table.addCell(cell);
             Paragraph col = new Paragraph("Insys Digital Systems Private Limited, Bangalore \nDigital Axle Counter Event logger Report", headerfont);
 //            col.setHorizontalAlignment(Element.ALIGN_CENTER);
-            col.setAlignment(Element.ALIGN_JUSTIFIED_ALL);
-            table.addCell(col); 
+            
+            cell = new PdfPCell(new Phrase(col));
+//            cell.setBackgroundColor(Color.LIGHT_GRAY);
+            table.addCell(cell); 
             String date = SharedData.getDate();
             String time = SharedData.getDateTime();
             String stringcell = String.format("Date: %s\nTime: %s",date,time);
