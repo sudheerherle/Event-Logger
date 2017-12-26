@@ -10,6 +10,7 @@ import com.healthmarketscience.jackcess.DatabaseBuilder;
 import com.healthmarketscience.jackcess.Table;
 import com.healthmarketscience.jackcess.TableBuilder;
 import com.lowagie.text.BadElementException;
+import com.lowagie.text.Cell;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -27,7 +28,12 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfTemplate;
+//import com.itextpdf.text.BaseColor;
 import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.rtf.field.RtfPageNumber;
+import com.lowagie.text.rtf.headerfooter.RtfHeaderFooter;
+import eventlogger.FooterTable;
+//import eventlogger.FooterTable.FooterTable;
 import eventlogger.common.SharedData;
 import eventlogger.fileutilities.ExtensionFileFilter;
 import java.awt.BorderLayout;
@@ -156,7 +162,7 @@ public class EventLoggerView extends FrameView {
     private boolean Stop_Updating = false;
     private String Network_ID="NA";
     private int percent = 0;
-    private String[] tableColumns = {"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Remote Forward","Local Reverse","Remote Reverse","Total Train Wheels"};
+    private String[] tableColumns = {"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Loc Fwd","Rem Fwd","Loc Rev","Rem Rev","Total Wheels"};
     private  MyTableModel model = new MyTableModel();    
     private SingleFrameApplication sfa = null;
     private long rtctime_diff;
@@ -2152,7 +2158,8 @@ private void prepareChart(){
                 df.data = new byte[2];
                 df.data[0] = (byte) 255;
                 df.data[1] = 0;
-                SendPacketRecieveResponse(df);   
+//                SendPacketRecieveResponse(df);   
+                UpdateEventList("All");
                 jTabbedPane1.setSelectedIndex(4); 
 //                Buttons(true,false);
                 }
@@ -2183,7 +2190,7 @@ private void prepareChart(){
         jTable1.setModel(model);
         Buttons(false,false);
         jTable1.setAutoResizeMode(jTable1.AUTO_RESIZE_OFF);
-        String[] StringToDisplay = new String[tableColumns.length];
+//        String[] StringToDisplay = new String[tableColumns.length];
         progressBar.setIndeterminate(false);
         event_list = sharedData.get_logged_events();
         if(sharedData.event_downloaded && event_list.size()==0){
@@ -2196,7 +2203,7 @@ private void prepareChart(){
             lblStatus.setText("");
             return;
         }
-        int total_events = event_list.size();
+//        int total_events = event_list.size();
         for(int col =0; col<tableColumns.length;col++){
             jTable1.getColumnModel().getColumn(col).setCellRenderer(new HighlightRenderer());
         }
@@ -2666,35 +2673,35 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
     }
     
-    private boolean exportPDF1(String path){
-        Document document = new Document(PageSize.A4.rotate()) {};
-        PdfWriter writer = null;
-        try {
-            try {
-                writer = PdfWriter.getInstance(document, new FileOutputStream(path));
-            } catch (DocumentException ex) {
-                Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        document.open();
-        PdfContentByte cb = writer.getDirectContent();
-        cb.saveState();
-      Graphics2D g2 = cb.createGraphics(500, 500);
-
-      Shape oldClip = g2.getClip();
-      g2.clipRect(10, 0, 500, 500);
-
-      jTable1.print(g2);
-      g2.setClip(oldClip);
-
-      g2.dispose();
-      cb.restoreState();
-        return true;   
-
-    }
+//    private boolean exportPDF1(String path){
+//        Document document = new Document(PageSize.A4.rotate()) {};
+//        PdfWriter writer = null;
+//        try {
+//            try {
+//                writer = PdfWriter.getInstance(document, new FileOutputStream(path));
+//            } catch (DocumentException ex) {
+//                Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        } catch (FileNotFoundException ex) {
+//            Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//
+//        document.open();
+//        PdfContentByte cb = writer.getDirectContent();
+//        cb.saveState();
+//      Graphics2D g2 = cb.createGraphics(500, 500);
+//
+//      Shape oldClip = g2.getClip();
+//      g2.clipRect(10, 0, 500, 500);
+//
+//      jTable1.print(g2);
+//      g2.setClip(oldClip);
+//
+//      g2.dispose();
+//      cb.restoreState();
+//        return true;   
+//
+//    }
     
        private void drawTable( PDPage page, PDPageContentStream contentStream) {
         try {
@@ -2790,65 +2797,26 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
    public boolean putToPDF(String path){
      try {
-            Document doc = new Document();
-            doc.setMargins(18, 18, 36, 36);
-            PdfWriter.getInstance(doc, new FileOutputStream(path));
+        Document doc = new Document();
+        doc.setMargins(6, 6, 88, 64);
+        PdfWriter pdfwriter = PdfWriter.getInstance(doc, new FileOutputStream(path));       
+
+        HeaderTable headerevent = new HeaderTable();
+        pdfwriter.setPageEvent(headerevent);
+        
+        FooterTable footerevent = new FooterTable();
+        pdfwriter.setPageEvent(footerevent);
+        
             doc.open();
-//            Image mainLogo = Toolkit.getDefaultToolkit().getImage(EventLoggerView.class.getResource("resources/insys_logo_w200.png"));
-            
-            Image logo = null;
-            try {
-                
-                final URL url = EventLoggerView.class.getProtectionDomain().getCodeSource().getLocation();
-                String jarPath=null;
-              try {
-                    jarPath = new File(url.toURI()).getAbsolutePath();
-                } catch (URISyntaxException ex) {
-//                    Exceptions.printStackTrace(ex);
-                }
-                String pt=jarPath;
-                pt = pt.replace("EventLogger.jar", "insys_logo_w200.png");
-                System.out.println("jar path: "+pt);
-                if(isDebug){
-                    pt = "E:\\GitHub\\Event-Logger\\Event Logger\\src\\eventlogger\\resources\\insys_logo_w200.png";
-                }
-                logo = Image.getInstance(pt);// E:\GitHub\Event-Logger\Event Logger\src\eventlogger\resources
-            } catch (BadElementException ex) {
-                Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            logo.setAlignment(Image.MIDDLE);
-            logo.scaleAbsoluteHeight(20);
-            logo.scaleAbsoluteWidth(20);
-            logo.scalePercent(20);
-            Chunk chunk = new Chunk(logo, 0, -15);
-            HeaderFooter header = new HeaderFooter(new Phrase(chunk), false);
-            header.setAlignment(Element.ALIGN_CENTER);
-            header.setBorder(Rectangle.NO_BORDER);
-            doc.setHeader(header);
-            doc.add(logo);
-            Font titleFont = FontFactory.getFont(FontFactory.TIMES_BOLD, 14, Color.BLUE);
-            Paragraph docTitle = new Paragraph("Insys Digital Systems - Event logger\n", titleFont);
-            doc.add(docTitle);
-            Font subtitleFont = FontFactory.getFont("Times Roman", 9, Color.BLACK);
-            
-            Date ti = new Date();
-            SimpleDateFormat sdf  = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z");
-            String time = sdf.format(ti);
-            Paragraph subTitle = new Paragraph("Time of log: "+time+"\n\n", subtitleFont);
-            doc.add(subTitle);
-            doc.addTitle("Event logger");
             PdfPTable pdfTable = new PdfPTable(jTable1.getColumnCount());
+//            pdfTable.setTotalWidth(550);
             int[] t = new int[jTable1.getColumnCount()];
             for(int h=0;h<t.length;h++){
-                t[h] = 40;
+                t[h] = 60;
             }
-            t[1] = 50;
-            t[4] = 120;
-            t[5] = 100;
+            t[1] = 70;
+            t[4] = 140;
+            t[5] = 120;
             pdfTable.setWidths(t);
             //adding table headers
             Font headerfont = FontFactory.getFont(FontFactory.TIMES_BOLD, 10, Color.BLUE);
@@ -2863,11 +2831,12 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                 pdfTable.addCell(col);
             }
             //extracting data from the JTable and inserting it to PdfPTable
-            
+            String value = "";
             for (int rows = 0; rows < jTable1.getRowCount() - 1; rows++) {
                 for (int cols = 0; cols < jTable1.getColumnCount(); cols++) {
-                    String value = jTable1.getModel().getValueAt(rows, cols).toString();
-                    
+                    if(jTable1.getModel().getValueAt(rows, cols) != null)
+                    value = jTable1.getModel().getValueAt(rows, cols).toString();
+                    else value = "";
                     if(value.toString().contains("Failure")
                      ||value.toString().contains("Defective")
                      ||value.toString().contains("Failed")
@@ -2894,7 +2863,11 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                     else{
                         rowfont = FontFactory.getFont(FontFactory.TIMES, 8, Color.BLACK);           
                     }
-                    col = new Paragraph(jTable1.getModel().getValueAt(rows, cols).toString(), rowfont);
+                    String paragraph = "";
+                    if(jTable1.getModel().getValueAt(rows, cols) != null){
+                        paragraph = jTable1.getModel().getValueAt(rows, cols).toString();
+                    }
+                    col = new Paragraph(paragraph, rowfont);
                     
                     PdfPCell row_items = new PdfPCell(col);
                     row_items.setColspan(3);
@@ -3008,79 +2981,79 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
        switch(this.unit_type){
             case 0:
             unit_type_txt = "DE";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Count","Total Train Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Count","Total Wheels"};
             break;
                 
             case 1:
             unit_type_txt = "SF";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Remote Forward","Local Reverse","Remote Reverse","Total Train Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Loc Fwd","Rem Fwd","Loc Rev","Rem Rev","Total Wheels"};
             break;
                 
             case 2:
             unit_type_txt = "EF";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Remote Forward","Local Reverse","Remote Reverse","Total Train Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Loc Fwd","Rem Fwd","Loc Rev","Rem Rev","Total Wheels"};
             break;
                 
             case 3:
             unit_type_txt = "CF";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","SF Count","S-CF Count","E-CF Count","EF Count","Total Train Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","SF Count","S-CF Count","E-CF Count","EF Count","Total Wheels"};
             break;
                 
             case 4:
             unit_type_txt = "3D1S-3A";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","NA","Total Train Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","NA","Total Wheels"};
             break;
                 
             case 5:
             unit_type_txt = "3D1S-3B";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Total Train Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Total Wheels"};
             
             break;
                 
             case 6:
             unit_type_txt = "3D1S-3C";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Total Train Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Total Wheels"};
             break;
             
             case 7:
             unit_type_txt = "3D-SF";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","SF Count","S-CF Count","S-EF Count","EF Count","Total Train Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","SF Count","S-CF Count","S-EF Count","EF Count","Total Wheels"};
             break;
                 
             case 8:
             unit_type_txt = "3D-EF";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","SF Count","S-CF Count","E-SF Count","EF Count","Total Train Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","SF Count","S-CF Count","E-SF Count","EF Count","Total Wheels"};
             break;
                 
             case 9:
             unit_type_txt = "LCWS";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Sensor A","Sensor B","Sensor C","Sensor D","Total Train Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Sensor A","Sensor B","Sensor C","Sensor D","Total Wheels"};
             break;
                 
             case 10:
             unit_type_txt = "LCWS - DL";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Sensor A","Sensor B","Sensor C","Sensor D","Total Train Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Sensor A","Sensor B","Sensor C","Sensor D","Total Wheels"};
             break;
                     
             case 11:
             unit_type_txt = "4D1S - A";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Train Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Wheels"};
             
             break;
                         
             case 12:
             unit_type_txt = "4D1S - B";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Train Wheels"};            
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Wheels"};            
             break;
                 
             case 13:
             unit_type_txt = "4D1S - C";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Train Wheels"};            
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Wheels"};            
             break;
                     
             case 14:
             unit_type_txt = "4D1S - D";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Train Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Wheels"};
             break;
        }
        networkIDField.setText(Network_ID);

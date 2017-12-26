@@ -241,6 +241,14 @@ public class SharedData
     }
 
     public LinkedList<EventDetails> get_logged_events(){
+        EventDetails ed = null;
+//        for(int g=0; g<100;g++){
+//            ed = new EventDetails();
+//            ed.CPU_Addrs =1 ;
+//            ed.Configuration = "2D1S-SF";
+//            ed.Station_Name = "INSYS";            
+//            this.event_list.add(ed);
+//        }
         return this.event_list;
     }    
     
