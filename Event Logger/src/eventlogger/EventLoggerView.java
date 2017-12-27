@@ -2158,7 +2158,7 @@ private void prepareChart(){
                 df.data = new byte[2];
                 df.data[0] = (byte) 255;
                 df.data[1] = 0;
-//                SendPacketRecieveResponse(df);   
+                SendPacketRecieveResponse(df);   
                 UpdateEventList("All");
                 jTabbedPane1.setSelectedIndex(4); 
 //                Buttons(true,false);
