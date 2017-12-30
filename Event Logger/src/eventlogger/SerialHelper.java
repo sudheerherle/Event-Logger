@@ -140,7 +140,7 @@ public class SerialHelper implements Runnable , SerialPortEventListener {
             } catch (IOException ex) {
                 // don't care
             }
-            // Close the port.
+//            // Close the port.
             serialPort = null;
         }
     }

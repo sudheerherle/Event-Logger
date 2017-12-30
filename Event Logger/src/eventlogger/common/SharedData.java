@@ -197,6 +197,10 @@ public class SharedData
             dataRecievedFlag = true;
             event_downloaded = true;
             EventLoggerApp.getApplication().getView().UpdateEventList("All");
+        }else if(buffer[1] == 4){
+            dataRecievedFlag = true;
+            event_downloaded = true;
+            EventLoggerApp.getApplication().getView().UpdateEventList("All");
         }
         DF_recieved = new DataFrame();
         DF_recieved.CPU_address = buffer[0];

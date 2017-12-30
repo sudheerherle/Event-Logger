@@ -578,9 +578,9 @@
                                   <Component id="jLabel14" linkSize="16" alignment="2" min="-2" max="-2" attributes="0"/>
                                   <Component id="timelbl" linkSize="16" alignment="2" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace type="separate" max="32767" attributes="0"/>
+                              <EmptySpace type="separate" pref="28" max="32767" attributes="0"/>
                               <Component id="jButton3" min="-2" pref="49" max="-2" attributes="0"/>
-                              <EmptySpace pref="54" max="32767" attributes="0"/>
+                              <EmptySpace pref="64" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -680,7 +680,7 @@
                               </Group>
                               <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                               <Component id="jButton12" min="-2" pref="49" max="-2" attributes="0"/>
-                              <EmptySpace pref="51" max="32767" attributes="0"/>
+                              <EmptySpace pref="71" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>

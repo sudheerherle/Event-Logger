@@ -44,18 +44,18 @@ public class HeaderTable extends PdfPageEventHelper{
         getInputArguments().toString().indexOf("jdwp") >= 0;
             table = new PdfPTable(3);
              int[] t = new int[table.getNumberOfColumns()];
-             t[0] = 125;
-             t[1] = 300;
-             t[2] = 125;
+             t[0] = 45;
+             t[1] = 380;
+             t[2] = 100;
         try {
             table.setWidths(t);
         } catch (DocumentException ex) {
             Logger.getLogger(HeaderTable.class.getName()).log(Level.SEVERE, null, ex);
         }
-            table.setTotalWidth(550);
+            table.setTotalWidth(530);
             table.setLockedWidth(true);
-            Font headerfont = FontFactory.getFont(FontFactory.TIMES_BOLD, 12, Color.BLACK); 
-            Font datetimefont = FontFactory.getFont(FontFactory.TIMES, 10, Color.BLACK);  
+            Font headerfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 10, Color.BLACK); 
+            Font datetimefont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 10, Color.BLACK);  
 //            table.addCell("Header row 1");
 //            table.addCell("Header row 2");
 //            table.addCell("Header row 3");
@@ -92,20 +92,23 @@ public class HeaderTable extends PdfPageEventHelper{
             logo.scaleAbsoluteWidth(20);
             logo.scalePercent(20);
             Chunk chunk = new Chunk(logo, 0, -15);
-            PdfPCell cell = new PdfPCell(new Phrase(chunk)); 
             
-            float cellheight = 40;
+            PdfPCell cell = new PdfPCell(new Phrase(chunk)); 
+            cell.setHorizontalAlignment(Element.ALIGN_MIDDLE);
+            
+            float cellheight = 45;
             cell.setFixedHeight(cellheight);
             table.addCell(cell);
-            Paragraph col = new Paragraph("Insys Digital Systems Private Limited, Bangalore \nDigital Axle Counter Event logger Report", headerfont);
-//            col.setHorizontalAlignment(Element.ALIGN_CENTER);
+            //<html><body  width=180 leftmargin=5 topmargin=20 marginwidth=5 marginheight=20>SSDAC Setup</body></html>
+//            Paragraph col = new Paragraph("<html><body  width=180 leftmargin=5 topmargin=20 marginwidth=5 marginheight=20>SSDAC Setup</body></html>");
+            Paragraph col = new Paragraph("                                        Insys Digital Systems Private Limited, Bangalore \n                                                   Single Section Digital Axle Counter\n                                                               Event logger Report", headerfont);
             
             cell = new PdfPCell(new Phrase(col));
 //            cell.setBackgroundColor(Color.LIGHT_GRAY);
             table.addCell(cell); 
             String date = SharedData.getDate();
             String time = SharedData.getDateTime();
-            String stringcell = String.format("Date: %s\nTime: %s",date,time);
+            String stringcell = String.format("\nDate: %s\nTime: %s",date,time);
             Paragraph coltime = new Paragraph(stringcell, datetimefont);
             table.addCell(coltime); 
             tableHeight = table.getTotalHeight();
@@ -118,7 +121,7 @@ public class HeaderTable extends PdfPageEventHelper{
  
         public void onEndPage(PdfWriter writer, Document document) {
             table.writeSelectedRows(0, -1,
-            36,
+            32,
             document.top() + (tableHeight) + 10,
             writer.getDirectContent());
         }

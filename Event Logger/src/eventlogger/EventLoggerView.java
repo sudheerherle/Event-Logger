@@ -123,7 +123,7 @@ public class EventLoggerView extends FrameView {
     UtilDateModel to_model = new UtilDateModel();
     private TimerTask Timeout_task;
     boolean isDebug = false;
-    private TimerTask Write_Timeout_task;
+//    private TimerTask Write_Timeout_task;
     private boolean time_out = false;
     private SerialHelper serial_helper;
     private DataFrame DF_recieved;
@@ -170,7 +170,7 @@ public class EventLoggerView extends FrameView {
         super(app);
         sfa = app;
         initComponents();  
-        
+        jButton7.setVisible(false);
 //        jTabbedPane1.addChangeListener(new ChangeListener() {
 //        public void stateChanged(ChangeEvent e) {
 //            int click = jTabbedPane1.getSelectedIndex();
@@ -266,12 +266,12 @@ public class EventLoggerView extends FrameView {
             }
         };
         
-        Write_Timeout_task = new TimerTask() {
-            @Override
-            public void run() {
-                time_out = true;
-            }
-        };       
+//        Write_Timeout_task = new TimerTask() {
+//            @Override
+//            public void run() {
+//                time_out = true;
+//            }
+//        };       
         
         Com_Blinker_Task = new TimerTask() {
             @Override
@@ -317,8 +317,14 @@ public class EventLoggerView extends FrameView {
         Timer timer1 = new Timer();
         timer1.scheduleAtFixedRate(Com_Blinker_Task, 0, 300);
         jTabbedPane1.setSelectedIndex(0);
-        if(sharedData.connected==false)
-        BtnConnect.doClick();
+//        if(sharedData.connected==false){
+//            if(com_connect(port)){
+//                   BtnConnect.setText("Disconnect");
+//                   jTabbedPane1.setSelectedIndex(1); 
+//                   UpdateStatusPanel();
+//                }
+//        }
+//        BtnConnect.doClick();
         
 //        UtilDateModel model = new UtilDateModel();
 //model.setDate(20,04,2014);
@@ -350,7 +356,7 @@ public class EventLoggerView extends FrameView {
             SwingUtilities.invokeLater(
               new Runnable() {
                 public void run() {
-                  jTabbedPane1.setSelectedIndex(1);
+                  jTabbedPane1.setSelectedIndex(0);
                 }
               }
             );
@@ -743,15 +749,15 @@ private void prepareChart(){
         public boolean wait_for_resp(){
         boolean retval = false;
         sharedData.time_out = false;
-        timeout_timer.schedule(new TimerThread(), 10000);
+//        timeout_timer.schedule(new TimerThread(), 10000);
         while (sharedData.dataRecievedFlag==false && sharedData.time_out == false){
             Thread.yield();
         }
-        if(sharedData.time_out){
-            sharedData.time_out = false;
-            sh.disconnect(); 
-            return false;
-        }
+//        if(sharedData.time_out){
+//            sharedData.time_out = false;
+//            sh.disconnect(); 
+//            return false;
+//        }
         sharedData.dataRecievedFlag = false;
         DF_recieved = sharedData.DF_recieved;
         int cmd = DF_recieved.CMD;
@@ -2189,14 +2195,15 @@ private void prepareChart(){
         model = new MyTableModel();
         jTable1.setModel(model);
         Buttons(false,false);
-        jTable1.setAutoResizeMode(jTable1.AUTO_RESIZE_OFF);
+        jTable1.setAutoResizeMode(jTable1.AUTO_RESIZE_ALL_COLUMNS);
 //        String[] StringToDisplay = new String[tableColumns.length];
         progressBar.setIndeterminate(false);
         event_list = sharedData.get_logged_events();
         if(sharedData.event_downloaded && event_list.size()==0){
             sharedData.event_downloaded = false;
             JOptionPane.showMessageDialog(this.getFrame(), "There are no events logged in the Event Logger", "Events not available", JOptionPane.ERROR_MESSAGE);
-            lblStatus.setText("");
+            GiveResponse("", Color.RED);
+            controlAllButtons(true);
             return;
         } else if(!sharedData.event_downloaded && cpu.equals("All")==false) {
             JOptionPane.showMessageDialog(this.getFrame(), "Please go to 'Event Download' tab and download the events first", "Events not available", JOptionPane.ERROR_MESSAGE);
@@ -2276,8 +2283,8 @@ private void prepareChart(){
             StringToDisplay[5] = ed.date_time;
             StringToDisplay[6] = getString(ed.Count1);   //9 & 10
             if(unit_type!=0){
-            StringToDisplay[7] = getString(ed.Count2); //5 & 6
-            StringToDisplay[8] = getString(ed.Count3); //11  & 12
+            StringToDisplay[7] = getString(ed.Count3); //5 & 6
+            StringToDisplay[8] = getString(ed.Count2); //11  & 12
             if(StringToDisplay.length==10){
                 StringToDisplay[9] = "--";
             }
@@ -2371,6 +2378,9 @@ private void prepareChart(){
         return retval;
     }
     private void BtnConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnConnectActionPerformed
+        if(BtnConnect.getText().contains("Disconnect")){
+            System.exit(0);
+        }
         if(sharedData.connected){
             Thread con_thread = new Thread(new Runnable() {
             public void run()
@@ -2555,7 +2565,7 @@ private void prepareChart(){
                 GiveResponse("Please wait...", Color.BLUE);
                
                  if(putToPDF(fullPath)==false){
-            JOptionPane.showMessageDialog(EventLoggerApp.getApplication().getView().getFrame(), "Failed to create PDF file.","Error",  JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(EventLoggerApp.getApplication().getView().getFrame(), "Failed to create PDF file.\nPlease close the currently opened PDF file.","Error",  JOptionPane.ERROR_MESSAGE);
             }
             else {
                 fullPath = fullPath.replace("\\", "/");
@@ -2796,9 +2806,11 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     }
 
    public boolean putToPDF(String path){
-     try {
+       boolean retval = false;
+        try {
+        
         Document doc = new Document();
-        doc.setMargins(6, 6, 88, 64);
+        doc.setMargins(-32, -32, 88, 64);
         PdfWriter pdfwriter = PdfWriter.getInstance(doc, new FileOutputStream(path));       
 
         HeaderTable headerevent = new HeaderTable();
@@ -2812,15 +2824,15 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 //            pdfTable.setTotalWidth(550);
             int[] t = new int[jTable1.getColumnCount()];
             for(int h=0;h<t.length;h++){
-                t[h] = 60;
+                t[h] = 35;
             }
-            t[1] = 70;
-            t[4] = 140;
-            t[5] = 120;
+//            t[1] = 30;
+            t[4] = 95;
+            t[5] = 80;
             pdfTable.setWidths(t);
             //adding table headers
-            Font headerfont = FontFactory.getFont(FontFactory.TIMES_BOLD, 10, Color.BLUE);
-            Font rowfont = FontFactory.getFont(FontFactory.TIMES, 8, Color.BLACK);            
+            Font headerfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.BLUE);
+            Font rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.BLACK);            
             Paragraph col = null;
             for (int i = 0; i < jTable1.getColumnCount(); i++) {
                 col = new Paragraph(jTable1.getColumnName(i), headerfont);
@@ -2848,20 +2860,22 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                      ||value.toString().contains("Theft")
                      ||value.toString().contains("Door Open")
                      ||value.toString().contains("BAD")){                       
-                         rowfont = FontFactory.getFont(FontFactory.TIMES, 8, Color.RED);           
+                         rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.RED);           
                     }else if(value.toString().contains("Clear")
                         || value.toString().contains("Restored")
                     ){
-                        rowfont = FontFactory.getFont(FontFactory.TIMES, 8, Color.GREEN);           
+                        Color clear_color = new Color(0,128,0);
+                        rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, clear_color);           
                     }else if(value.toString().contains("Missing")){
-                        rowfont = FontFactory.getFont(FontFactory.TIMES, 8, Color.PINK); 
+                        rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.PINK); 
                     }else if(value.toString().contains("Normal")){
-                        rowfont = FontFactory.getFont(FontFactory.TIMES, 8, Color.BLUE);
+                        rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.BLUE);
                     }else if(value.toString().contains("Occupied")){
-                        rowfont = FontFactory.getFont(FontFactory.TIMES, 8, Color.ORANGE);
+                        Color c = new Color(255, 127, 127);
+                        rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, c);
                     }
                     else{
-                        rowfont = FontFactory.getFont(FontFactory.TIMES, 8, Color.BLACK);           
+                        rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.BLACK);           
                     }
                     String paragraph = "";
                     if(jTable1.getModel().getValueAt(rows, cols) != null){
@@ -2880,12 +2894,15 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             doc.add(pdfTable);
             doc.close();
             System.out.println("done");
+            retval = true;
         } catch (DocumentException ex) {
             Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
+            retval = false;
         } catch (FileNotFoundException ex) {
             Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
+            retval = false;
         }
-     return true;
+     return retval;
 }
        
     public boolean ExportAccess(String path){
@@ -2986,12 +3003,12 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
                 
             case 1:
             unit_type_txt = "SF";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Loc Fwd","Rem Fwd","Loc Rev","Rem Rev","Total Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Local Reverse", "Remote Forward","Remote Reverse","Total Wheels"};
             break;
                 
             case 2:
             unit_type_txt = "EF";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Loc Fwd","Rem Fwd","Loc Rev","Rem Rev","Total Wheels"};
+            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Local Reverse", "Remote Forward","Remote Reverse","Total Wheels"};
             break;
                 
             case 3:

@@ -5,6 +5,8 @@
 package eventlogger;
 
 import com.lowagie.text.Document;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
@@ -23,17 +25,18 @@ public class FooterTable extends PdfPageEventHelper{
         protected PdfPTable table;
         public FooterTable() {
         table = new PdfPTable(2);
-        table.setTotalWidth(550);
-        PdfPCell cell = new PdfPCell(new Phrase("Verified by:\nSignature:"));
-        cell.setBackgroundColor(Color.ORANGE);        
+        Font foot_font = FontFactory.getFont(FontFactory.TIMES_ROMAN, 10, Color.BLACK);  
+        table.setTotalWidth(530);
+        PdfPCell cell = new PdfPCell(new Phrase("Verified by:\nSignature:",foot_font));
+//        cell.setBackgroundColor(Color.ORANGE);        
         table.addCell(cell);
-        cell = new PdfPCell(new Phrase("Approved by:\nSignature:"));
-        cell.setBackgroundColor(Color.LIGHT_GRAY);
+        cell = new PdfPCell(new Phrase("Approved by:\nSignature:",foot_font));
+//        cell.setBackgroundColor(Color.LIGHT_GRAY);
         table.addCell(cell);
             
         }
         public void onEndPage(PdfWriter writer, Document document) {
-            table.writeSelectedRows(0, -1, 36, 64, writer.getDirectContent());
+            table.writeSelectedRows(0, -1, 32, 64, writer.getDirectContent());
         }
     }
 //}
