@@ -743,15 +743,15 @@ private void prepareChart(){
         public boolean wait_for_resp(){
         boolean retval = false;
         sharedData.time_out = false;
-        //timeout_timer.schedule(new TimerThread(), 3000);
-        while (sharedData.dataRecievedFlag==false/* && sharedData.time_out == false*/){
+        timeout_timer.schedule(new TimerThread(), 10000);
+        while (sharedData.dataRecievedFlag==false && sharedData.time_out == false){
             Thread.yield();
         }
-//        if(sharedData.time_out){
-//            sharedData.time_out = false;
-//            sh.disconnect(); 
-//            return false;
-//        }
+        if(sharedData.time_out){
+            sharedData.time_out = false;
+            sh.disconnect(); 
+            return false;
+        }
         sharedData.dataRecievedFlag = false;
         DF_recieved = sharedData.DF_recieved;
         int cmd = DF_recieved.CMD;
