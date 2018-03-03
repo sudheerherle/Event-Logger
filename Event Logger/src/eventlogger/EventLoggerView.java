@@ -36,10 +36,13 @@ import eventlogger.FooterTable;
 //import eventlogger.FooterTable.FooterTable;
 import eventlogger.common.SharedData;
 import eventlogger.fileutilities.ExtensionFileFilter;
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -60,6 +63,7 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,8 +110,32 @@ import org.jdatepicker.impl.UtilDateModel;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.labels.StandardXYSeriesLabelGenerator;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PiePlot3D;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.RangeType;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.RegularTimePeriod;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.time.TimeSeriesDataItem;
+import org.jfree.data.time.Year;
+import org.jfree.data.xy.XYDataItem;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.omg.PortableServer.POAManagerPackage.State;
 /**
  * The application's main frame.
@@ -118,6 +146,7 @@ public class EventLoggerView extends FrameView {
     private SerialHelper sh = new SerialHelper();
     private static byte[] poll_port = new byte[]{0x1,0x0};
     private  TimerTask Blinker_Task ;
+    
     String fullPath = "";
     UtilDateModel from_model = new UtilDateModel();
     UtilDateModel to_model = new UtilDateModel();
@@ -152,6 +181,7 @@ public class EventLoggerView extends FrameView {
     int REPLY_TO_RECORDS_Resp_Length         = 19;		
     int GET_EVENT_COUNTS_Resp_Length         = 18;
     private byte cpu_Addrs = 0;
+    boolean erase_command_sent = false;
     private String port;
     private TimerTask Com_Blinker_Task;
     private int unit_type;
@@ -166,18 +196,29 @@ public class EventLoggerView extends FrameView {
     private  MyTableModel model = new MyTableModel();    
     private SingleFrameApplication sfa = null;
     private long rtctime_diff;
+    private long total_good_time = 0;
+    private long total_bad_time = 0;
+    TimeSeries time_series_up_time = new TimeSeries("SSDAC System Up time");
+    TimeSeries time_series_down_time = new TimeSeries("SSDAC System down time");
+    
     public EventLoggerView(SingleFrameApplication app) {
         super(app);
         sfa = app;
         initComponents();  
         jButton7.setVisible(false);
-//        jTabbedPane1.addChangeListener(new ChangeListener() {
-//        public void stateChanged(ChangeEvent e) {
-//            int click = jTabbedPane1.getSelectedIndex();
-//            System.out.println("Tab: " + click);
-//            if(click == 6){
-//                new ChartWorker().execute();    
-//            }else if(click == 2){
+        Color clear_color = new Color(0,128,0);
+        jLabel21.setForeground(clear_color);
+        jLabel23.setForeground(Color.RED);
+        jLabel25.setForeground(Color.BLUE);
+        jTabbedPane1.addChangeListener(new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+            int click = jTabbedPane1.getSelectedIndex();
+            System.out.println("Tab: " + click);
+            if(click == 6){
+                Calculate_MUT_MDT();
+                new ChartWorker().execute();    
+            }
+//               else if(click == 2){
 //                Thread thread = new Thread(new UpdateRTCTime(sfa));
 //                thread.start();
 //            }else if(click == 3){
@@ -193,8 +234,8 @@ public class EventLoggerView extends FrameView {
 //                }
 //                }
 //            }
-//        }
-//        });
+        }
+        });
         isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
         getInputArguments().toString().indexOf("jdwp") >= 0;
 //        JFrame frame = new JFrame();
@@ -611,13 +652,22 @@ private void prepareChart(){
         dataset.setValue("Error", error);//error
         dataset.setValue("Missing", missing);//missing
         dataset.setValue("Normal", normal);//normal
-        JFreeChart chart3 = ChartFactory.createPieChart3D("SSDAC System Analysis", dataset, true, true, true);
+        JFreeChart chart3 = ChartFactory.createPieChart3D("SSDAC Event Categories", dataset, true, true, true);
         PiePlot3D plot3 = (PiePlot3D) chart3.getPlot();
         plot3.setDarkerSides(true);
         plot3.setForegroundAlpha(0.7f);        
         plot3.setCircular(true);
         jPanel17.add(new ChartPanel(chart3));
         jPanel17.repaint(); 
+        jPanel17.invalidate();
+        
+//        jPanel17.removeAll();
+        final XYDataset time_dataset = createDataset();
+        final JFreeChart chart = createChart(time_dataset);
+        final ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new Dimension(500, 270));
+        jPanel17.add(chartPanel);
+        jPanel17.repaint();
         jPanel17.invalidate();
 }
     
@@ -749,15 +799,24 @@ private void prepareChart(){
         public boolean wait_for_resp(){
         boolean retval = false;
         sharedData.time_out = false;
+        TimerThread th = new TimerThread();
+        sharedData.time_out = false;
+        if(!erase_command_sent)
+        timeout_timer.schedule(th, 3000);
 //        timeout_timer.schedule(new TimerThread(), 10000);
         while (sharedData.dataRecievedFlag==false && sharedData.time_out == false){
             Thread.yield();
         }
-//        if(sharedData.time_out){
-//            sharedData.time_out = false;
-//            sh.disconnect(); 
-//            return false;
-//        }
+        if(sharedData.time_out){
+            sharedData.time_out = false;
+            sh.disconnect(); 
+            return false;
+        }
+        if(sharedData.dataRecievedFlag == false){
+            this.com_disconnect();
+            return false;
+        }
+        th.cancel();
         sharedData.dataRecievedFlag = false;
         DF_recieved = sharedData.DF_recieved;
         int cmd = DF_recieved.CMD;
@@ -952,8 +1011,16 @@ private void prepareChart(){
         jLabel9 = new javax.swing.JLabel();
         ErasePwdTxtField = new javax.swing.JPasswordField();
         jPanel2 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
         jPanel17 = new javax.swing.JPanel();
+        jPanel20 = new javax.swing.JPanel();
+        jLabel26 = new javax.swing.JLabel();
+        jPanel21 = new javax.swing.JPanel();
+        jLabel25 = new javax.swing.JLabel();
+        jLabel24 = new javax.swing.JLabel();
+        jLabel23 = new javax.swing.JLabel();
+        jLabel22 = new javax.swing.JLabel();
+        jLabel21 = new javax.swing.JLabel();
+        jLabel20 = new javax.swing.JLabel();
         jPanel9 = new javax.swing.JPanel();
         lblStatus = new javax.swing.JLabel();
         connection_indicator_panel = new javax.swing.JPanel();
@@ -963,6 +1030,8 @@ private void prepareChart(){
         menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
+        jMenu2 = new javax.swing.JMenu();
+        jMenuItem3 = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
@@ -1358,9 +1427,9 @@ private void prepareChart(){
             .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                 .addComponent(jLabel14)
                 .addComponent(timelbl))
-            .addGap(18, 18, Short.MAX_VALUE)
+            .addGap(18, 28, Short.MAX_VALUE)
             .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addContainerGap(74, Short.MAX_VALUE))
+            .addContainerGap(64, Short.MAX_VALUE))
     );
 
     jPanel11Layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {datelbl, jLabel13, jLabel14, timelbl});
@@ -1586,9 +1655,7 @@ private void prepareChart(){
                 .addGroup(jPanel12Layout.createSequentialGroup()
                     .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(jPanel12Layout.createSequentialGroup()
-                            .addComponent(jPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                        .addComponent(jPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGap(457, 457, 457))
                 .addGroup(jPanel12Layout.createSequentialGroup()
                     .addComponent(BtnDownloadEvents, javax.swing.GroupLayout.PREFERRED_SIZE, 361, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1775,17 +1842,101 @@ private void prepareChart(){
     jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder(resourceMap.getColor("jPanel2.border.highlightColor"), resourceMap.getColor("jPanel2.border.shadowColor"))); // NOI18N
     jPanel2.setName("jPanel2"); // NOI18N
 
-    jButton1.setFont(resourceMap.getFont("jButton1.font")); // NOI18N
-    jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
-    jButton1.setName("jButton1"); // NOI18N
-    jButton1.addActionListener(new java.awt.event.ActionListener() {
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-            jButton1ActionPerformed(evt);
-        }
-    });
-
     jPanel17.setName("jPanel17"); // NOI18N
-    jPanel17.setLayout(new java.awt.GridLayout(1, 0));
+    jPanel17.setLayout(new java.awt.GridLayout(2, 0));
+
+    jPanel20.setName("jPanel20"); // NOI18N
+
+    jLabel26.setFont(resourceMap.getFont("jLabel26.font")); // NOI18N
+    jLabel26.setText(resourceMap.getString("jLabel26.text")); // NOI18N
+    jLabel26.setToolTipText(resourceMap.getString("jLabel26.toolTipText")); // NOI18N
+    jLabel26.setName("jLabel26"); // NOI18N
+
+    jPanel21.setName("jPanel21"); // NOI18N
+
+    jLabel25.setFont(resourceMap.getFont("jLabel21.font")); // NOI18N
+    jLabel25.setForeground(resourceMap.getColor("jLabel25.foreground")); // NOI18N
+    jLabel25.setText(resourceMap.getString("jLabel25.text")); // NOI18N
+    jLabel25.setName("jLabel25"); // NOI18N
+
+    jLabel24.setText(resourceMap.getString("jLabel24.text")); // NOI18N
+    jLabel24.setName("jLabel24"); // NOI18N
+
+    jLabel23.setFont(resourceMap.getFont("jLabel21.font")); // NOI18N
+    jLabel23.setForeground(resourceMap.getColor("jLabel23.foreground")); // NOI18N
+    jLabel23.setText(resourceMap.getString("jLabel23.text")); // NOI18N
+    jLabel23.setName("jLabel23"); // NOI18N
+
+    jLabel22.setText(resourceMap.getString("jLabel22.text")); // NOI18N
+    jLabel22.setName("jLabel22"); // NOI18N
+
+    jLabel21.setFont(resourceMap.getFont("jLabel21.font")); // NOI18N
+    jLabel21.setForeground(resourceMap.getColor("jLabel21.foreground")); // NOI18N
+    jLabel21.setText(resourceMap.getString("jLabel21.text")); // NOI18N
+    jLabel21.setName("jLabel21"); // NOI18N
+
+    jLabel20.setText(resourceMap.getString("jLabel20.text")); // NOI18N
+    jLabel20.setName("jLabel20"); // NOI18N
+
+    javax.swing.GroupLayout jPanel21Layout = new javax.swing.GroupLayout(jPanel21);
+    jPanel21.setLayout(jPanel21Layout);
+    jPanel21Layout.setHorizontalGroup(
+        jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel21Layout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jLabel24)
+                .addComponent(jLabel22)
+                .addComponent(jLabel20))
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addGroup(jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jLabel25, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
+                .addComponent(jLabel23, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
+                .addComponent(jLabel21, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE))
+            .addContainerGap())
+    );
+    jPanel21Layout.setVerticalGroup(
+        jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(jPanel21Layout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                .addGroup(jPanel21Layout.createSequentialGroup()
+                    .addComponent(jLabel20)
+                    .addGap(8, 8, 8)
+                    .addComponent(jLabel22)
+                    .addGap(8, 8, 8)
+                    .addComponent(jLabel24))
+                .addGroup(jPanel21Layout.createSequentialGroup()
+                    .addComponent(jLabel21)
+                    .addGap(8, 8, 8)
+                    .addComponent(jLabel23)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                    .addComponent(jLabel25)))
+            .addContainerGap(118, Short.MAX_VALUE))
+    );
+
+    jPanel21Layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jLabel20, jLabel21, jLabel22, jLabel23, jLabel24, jLabel25});
+
+    javax.swing.GroupLayout jPanel20Layout = new javax.swing.GroupLayout(jPanel20);
+    jPanel20.setLayout(jPanel20Layout);
+    jPanel20Layout.setHorizontalGroup(
+        jPanel20Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel20Layout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(jPanel20Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addComponent(jPanel21, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel26, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addContainerGap())
+    );
+    jPanel20Layout.setVerticalGroup(
+        jPanel20Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(jPanel20Layout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(jLabel26, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 173, Short.MAX_VALUE)
+            .addComponent(jPanel21, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addContainerGap())
+    );
 
     javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
     jPanel2.setLayout(jPanel2Layout);
@@ -1793,18 +1944,18 @@ private void prepareChart(){
         jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(jPanel2Layout.createSequentialGroup()
             .addContainerGap()
-            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jPanel17, javax.swing.GroupLayout.DEFAULT_SIZE, 820, Short.MAX_VALUE)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addComponent(jPanel20, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(10, 10, 10)
+            .addComponent(jPanel17, javax.swing.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
             .addContainerGap())
     );
     jPanel2Layout.setVerticalGroup(
         jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(jPanel2Layout.createSequentialGroup()
             .addContainerGap()
-            .addComponent(jButton1)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-            .addComponent(jPanel17, javax.swing.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jPanel17, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 523, Short.MAX_VALUE)
+                .addComponent(jPanel20, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addContainerGap())
     );
 
@@ -1856,7 +2007,6 @@ private void prepareChart(){
         .addGroup(jPanel9Layout.createSequentialGroup()
             .addGap(52, 52, 52)
             .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(lblStatus, javax.swing.GroupLayout.DEFAULT_SIZE, 977, Short.MAX_VALUE)
                 .addGroup(jPanel9Layout.createSequentialGroup()
                     .addComponent(jLabel4)
                     .addGap(18, 18, 18)
@@ -1864,7 +2014,8 @@ private void prepareChart(){
                     .addGap(18, 18, 18)
                     .addComponent(jLabel6)
                     .addGap(18, 18, 18)
-                    .addComponent(connection_indicator_panel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(connection_indicator_panel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(lblStatus, javax.swing.GroupLayout.DEFAULT_SIZE, 977, Short.MAX_VALUE))
             .addContainerGap())
     );
     jPanel9Layout.setVerticalGroup(
@@ -1872,7 +2023,7 @@ private void prepareChart(){
         .addGroup(jPanel9Layout.createSequentialGroup()
             .addContainerGap()
             .addComponent(lblStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1880,7 +2031,7 @@ private void prepareChart(){
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(connection_indicator_panel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addContainerGap())
     );
 
     jPanel9Layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {connection_indicator_panel, jLabel4});
@@ -1922,6 +2073,20 @@ private void prepareChart(){
     fileMenu.add(exitMenuItem);
 
     menuBar.add(fileMenu);
+
+    jMenu2.setText(resourceMap.getString("jMenu2.text")); // NOI18N
+    jMenu2.setName("jMenu2"); // NOI18N
+
+    jMenuItem3.setText(resourceMap.getString("jMenuItem3.text")); // NOI18N
+    jMenuItem3.setName("jMenuItem3"); // NOI18N
+    jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jMenuItem3ActionPerformed(evt);
+        }
+    });
+    jMenu2.add(jMenuItem3);
+
+    menuBar.add(jMenu2);
 
     jMenu1.setText(resourceMap.getString("jMenu1.text")); // NOI18N
     jMenu1.setName("jMenu1"); // NOI18N
@@ -1993,7 +2158,9 @@ private void prepareChart(){
                     df.CPU_address = cpu_Addrs;
                     df.CMD = ERASE_EVENTS_EEPROM;
                     df.data = new byte[0];
+                    erase_command_sent = true;
                     SendPacketRecieveResponse(df); 
+                    erase_command_sent = false;
                     controlAllButtons(true);
                 }else{
                     GiveResponse("Aborted by user", Color.RED);
@@ -2264,7 +2431,6 @@ private void prepareChart(){
 
         @Override
         protected String doInBackground() throws Exception {
-
             Buttons(false,false);
             int total_events = event_list.size();
             String[] StringToDisplay = new String[tableColumns.length];
@@ -2281,15 +2447,15 @@ private void prepareChart(){
             String event_desc = get_event_desc(ed.event_ID);
             StringToDisplay[4] = event_desc;
             StringToDisplay[5] = ed.date_time;
-            StringToDisplay[6] = getString(ed.Count1);   //9 & 10
+            StringToDisplay[6] = getString(ed.Count1);   
             if(unit_type!=0){
-            StringToDisplay[7] = getString(ed.Count3); //5 & 6
-            StringToDisplay[8] = getString(ed.Count2); //11  & 12
+            StringToDisplay[7] = getString(ed.Count2); 
+            StringToDisplay[8] = getString(ed.Count3); 
             if(StringToDisplay.length==10){
                 StringToDisplay[9] = "--";
             }
             else{ 
-            StringToDisplay[9] = getString(ed.Count4);  //7 & 8            
+            StringToDisplay[9] = getString(ed.Count4);             
             StringToDisplay[10] = "--";
             }
             }else{
@@ -2322,6 +2488,7 @@ private void prepareChart(){
             }
             }
             Buttons(true,false);
+//            Calculate_MUT_MDT();
             progressBar.setValue(0);
             GiveResponse("Logged events have been populated.", Color.BLUE);
             return "return";
@@ -2332,7 +2499,161 @@ private void prepareChart(){
             model.addRows(row);
         }
     }
+          
+   public void Calculate_MUT_MDT(){       
+        total_bad_time = 0;
+        total_good_time = 0;
+        time_series_up_time.clear();
+        time_series_down_time.clear();
+        int total_events = event_list.size();
+        String good_time_start= "", good_time_end = "";
+        String bad_time_start = "", bad_time_end = "";
+        for(int i = total_events-1; i>0;i--){
+            good_time_start= ""; good_time_end = ""; bad_time_start = ""; bad_time_end = "";            
+            EventDetails ed = event_list.get(i);
+            if(ed.event_ID == 9){         //add good cases here
+                good_time_start = ed.date_time;            
+                while(i>0){
+                    i--;
+                    ed = event_list.get(i);
+                    if(ed.event_ID == 79        //add bad events here
+                    || ed.event_ID == 77
+                    || ed.event_ID == 2
+                    || ed.event_ID == 69
+                    || ed.event_ID == 39
+                    || ed.event_ID == 41
+                    || ed.event_ID == 33
+                    || ed.event_ID == 55
+                    || ed.event_ID == 43
+                    || ed.event_ID == 45
+                    || ed.event_ID == 51
+                    || ed.event_ID == 53
+                    || ed.event_ID == 81
+                    || ed.event_ID == 83
+                    || ed.event_ID == 71
+                    || ed.event_ID == 96
+                    || ed.event_ID == 97
+                    || ed.event_ID == 98
+                    || ed.event_ID == 99
+                    || ed.event_ID == 100
+                    || ed.event_ID == 101
+                    || ed.event_ID == 102
+                    || ed.event_ID == 103
+                    || ed.event_ID == 104
+                    || ed.event_ID == 105
+                    || ed.event_ID == 106
+                    ){
+                    good_time_end = ed.date_time;
+                    calculate_total_good_time(good_time_start,good_time_end);
+                    break;
+                    }
+                }
+            }
+            
+        else{
+            switch(ed.event_ID)  {  
+            
+            case 79:        //add bad events here
+            case 77:
+            case 71:            
+            case 2:
+            case 69:
+            case 39:
+            case 41:
+            case 83:
+            case 81:
+            case 33:
+            case 55:
+            case 53:
+            case 51:
+            case 43:
+            case 45:
+            case 96:
+            case 97:
+            case 98:
+            case 99:
+            case 100:
+            case 101:
+            case 102:
+            case 103:
+            case 104:
+            case 105:
+            case 106:
+            case 107:
+              bad_time_start = ed.date_time;            
+                while(i>0){
+                    i--;
+                ed = event_list.get(i);
+                if(ed.event_ID == 9){       //add good events here
+                    bad_time_end = ed.date_time;
+                    calculate_total_bad_time(bad_time_start,bad_time_end);
+                    break;
+                }
+                }
+                break;
+            }
+        }
+        }
         
+        long up_time = total_good_time;
+        String up_duration = sharedData.getDuration(up_time);
+        jLabel21.setText(up_duration);   
+        long down_time = total_bad_time;
+        String down_duration = sharedData.getDuration(down_time);
+        jLabel23.setText(down_duration);
+        System.out.println("good time: " + total_good_time);
+        System.out.println("bad time: " + total_bad_time);
+        float SA = 0;
+        if(total_bad_time + total_good_time == 0){
+            jLabel25.setText("NA");
+        }
+        else {
+            SA = (float)total_good_time/((float)total_bad_time+(float)total_good_time);
+            SA = SA * 100;
+            if(Float.toString(SA).length()<5){
+                jLabel25.setText(Float.toString(SA)+"%");
+            }
+            else jLabel25.setText(Float.toString(SA).substring(0, 5)+"%");
+        }
+        
+   }
+   private void calculate_total_good_time(String start, String end){
+       if(start.equals("") || end.equals("")) return;
+    SimpleDateFormat format = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
+    Date d1 = null;
+    Date d2 = null;
+    try {
+        d1 = format.parse(start);
+        d2 = format.parse(end);
+    } catch (ParseException e) {
+        e.printStackTrace();
+    }
+    long diff_in_secs = d2.getTime()/1000 - d1.getTime()/1000;
+    total_good_time = total_good_time + diff_in_secs;    
+    long diff_in_hours = total_good_time /3600;
+    Day p = new Day(d2);
+    time_series_up_time.addOrUpdate(p,diff_in_hours);
+    System.out.println(p);
+   }
+   
+    private void calculate_total_bad_time(String start, String end){
+        if(start.equals("") || end.equals("")) return;
+    SimpleDateFormat format = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
+    Date d1 = null;
+    Date d2 = null;
+    try {
+        d1 = format.parse(start);
+        d2 = format.parse(end);
+    } catch (ParseException e) {
+        e.printStackTrace();
+    }
+    // Get msec from each, and subtract.
+    total_bad_time = total_bad_time + d2.getTime()/1000 - d1.getTime()/1000;
+    long diff_in_hours = total_bad_time /3600;
+    Day p = new Day(d2);
+    time_series_down_time.addOrUpdate(p,diff_in_hours);
+   }
+   
     public void resizeColumnWidth(JTable table) {
     final TableColumnModel columnModel = table.getColumnModel();
     for (int column = 0; column < table.getColumnCount(); column++) {
@@ -2401,7 +2722,7 @@ private void prepareChart(){
 
             public void run()
             {
-                if(com_connect(port)){
+                if(com_connect()){
                    BtnConnect.setText("Disconnect");
                    jTabbedPane1.setSelectedIndex(1); 
                    UpdateStatusPanel();
@@ -2436,11 +2757,6 @@ private void prepareChart(){
         ab.setLocationRelativeTo(this.getFrame());
         ab.setVisible(true);
     }//GEN-LAST:event_jMenuItem1ActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-         
-        new ChartWorker().execute();       
-    }//GEN-LAST:event_jButton1ActionPerformed
 
     class ChartWorker extends SwingWorker<Integer, Integer>
     {
@@ -2641,6 +2957,12 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         jPanel18.setEnabled(jRadioButton2.isSelected());
         jPanel19.setEnabled(jRadioButton2.isSelected());
 }//GEN-LAST:event_jRadioButton2ActionPerformed
+
+private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+    communicationSetting cs = new communicationSetting(null, true);
+    cs.setLocationRelativeTo(this.getFrame());
+    cs.setVisible(true);
+}//GEN-LAST:event_jMenuItem3ActionPerformed
 
     public boolean ExportPDF(String path){
         
@@ -3078,6 +3400,121 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
        jTextField4.setText(Long.toString(this.cpu_Addrs,10));     
        GiveResponse("Updated the DAC status", Color.BLUE);
     }
+     public boolean com_connect(){
+        boolean retval = false;
+//        try {
+                sh.disconnect();
+                controlAllButtons(false);
+                sharedData.connected = false;
+                String[] ports = sh.getSerialPorts();
+//                if(ports.length==0){
+//                    JOptionPane.showMessageDialog(this.getFrame(), "The Train Simulator hardware was not found. \nIf the hardware is already connected, please try unplugging and replugging again!", "Re-Plug",
+//                JOptionPane.WARNING_MESSAGE);
+//                }
+                for(int p = 0; p< ports.length;p++){
+                GiveResponse("Connecting to port for the first time. Please wait...", Color.blue);
+                try{
+                if(sh.connect(ports[p], 9600)){
+                    DataFrame df = new DataFrame();
+                    df.CMD = GET_DAC_STATUS;
+                    df.CPU_address = 0x55;
+                    df.data = new byte[0];
+                    if(SendPacketRecieveResponse(df)){
+                     sharedData.connected = true;
+                     sharedData.connectedToHardware = true;
+                     retval =  true;
+                     break;
+                    }else{
+//                        retval = false;
+                    }                    
+                } 
+                }catch(IOException ex){
+                    
+                }
+                }
+                if(sharedData.connected==false){
+                    JOptionPane.showMessageDialog(null, "The event download hardware was not found. \nIf the hardware is already connected, please try unplugging and replugging again!", "Re-Plug",
+                JOptionPane.WARNING_MESSAGE);
+                }
+                
+//        } catch (IOException ex) {
+//            retval = false;
+//            sharedData.connected = false;
+//            GiveResponse("Port was not found or in use...", Color.red);
+//        }
+                controlAllButtons(true);
+        return retval;
+    }
+     
+      /**
+     * Returns a sample dataset.
+     * 
+     * @return The dataset.
+     */
+    private XYDataset createDataset() {
+        TimeSeriesCollection dataset = new TimeSeriesCollection();
+        dataset.addSeries(time_series_up_time);
+        dataset.addSeries(time_series_down_time);
+        return dataset;
+    }
+    
+    /**
+     * Creates a sample chart.
+     * 
+     * @param dataset  the dataset.
+     * 
+     * @return The chart.
+     */
+    private JFreeChart createChart(XYDataset dataset) {
+        
+        // create the chart...
+        final JFreeChart chart = ChartFactory.createXYLineChart(
+         "SSDAC System Availability",
+         "Days" ,
+         "Hours" ,
+         dataset,
+         PlotOrientation.VERTICAL ,
+         true , true , false);
+
+         ChartPanel chartPanel = new ChartPanel( chart );
+      chartPanel.setPreferredSize( new java.awt.Dimension( 560 , 367 ) );
+      final XYPlot plot = chart.getXYPlot( );
+      DateAxis dateAxis = new DateAxis();
+        dateAxis.setDateFormatOverride(new SimpleDateFormat("dd-MMM-yyyy")); 
+        plot.setDomainAxis(dateAxis);
+//      NumberAxis domain = (NumberAxis) plot.getDomainAxis();
+        NumberAxis range = (NumberAxis) plot.getRangeAxis();
+//        range.setRange(0.0, 1.0);
+        range.setRangeType(RangeType.POSITIVE);
+        
+//        range.setTickUnit(new NumberTickUnit(24.0));
+        
+//      XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer( );
+        UpTimeToolTipGenerator tooltipgen_up_time = new UpTimeToolTipGenerator();
+        DownTimeToolTipGenerator tooltipgen_down_time = new DownTimeToolTipGenerator();
+      XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+//        renderer.setLegendItemToolTipGenerator(tooltipgen);
+      renderer.setSeriesToolTipGenerator(0, tooltipgen_up_time);
+      renderer.setSeriesToolTipGenerator(1, tooltipgen_down_time);
+      renderer.setSeriesPaint( 0 , Color.BLUE );
+      renderer.setSeriesPaint( 1 , Color.RED );
+//      renderer.setSeriesPaint( 1 , Color.GREEN );
+//      renderer.setSeriesPaint( 2 , Color.YELLOW );
+//      renderer.setSeriesStroke( 0 , new BasicStroke( 2.0f ) );
+//      renderer.setSeriesStroke( 1 , new BasicStroke( 3.0f ) );
+//      renderer.setSeriesStroke( 2 , new BasicStroke( 2.0f ) );
+       renderer.setSeriesShape(0, new java.awt.Rectangle(-2, -2, 4, 4));
+       renderer.setSeriesShape(1, new java.awt.Rectangle(-2, -2, 4, 4));
+        renderer.setSeriesShapesVisible(0, true);
+        renderer.setSeriesShapesVisible(1, true);
+        renderer.setShapesFilled(true);
+      plot.setRenderer( renderer ); 
+//      setContentPane( chartPanel ); 
+        return chart;
+        
+    }
+    
+     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtnConnect;
     private javax.swing.JButton BtnDownloadEvents;
@@ -3097,7 +3534,6 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private javax.swing.JComboBox cpuselectCmbBx;
     private javax.swing.JLabel datelbl;
     private javax.swing.JTextField dpField;
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton12;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
@@ -3118,6 +3554,13 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
+    private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel24;
+    private javax.swing.JLabel jLabel25;
+    private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -3126,8 +3569,10 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
@@ -3140,6 +3585,8 @@ private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private javax.swing.JPanel jPanel18;
     private javax.swing.JPanel jPanel19;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel20;
+    private javax.swing.JPanel jPanel21;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;

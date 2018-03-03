@@ -56,7 +56,11 @@ import javax.sound.sampled.SourceDataLine;
 public class SharedData
 {
     
-    
+    long SECONDS_IN_A_MINUTE = 60;
+    long MINUTES_IN_AN_HOUR = 60;
+    long HOURS_IN_A_DAY = 24;
+    long DAYS_IN_A_MONTH = 30;
+    long MONTHS_IN_A_YEAR = 12;
     public Properties globalProps= null;
     public DataFrame DF_recieved;
     public boolean cleanInstall=false;
@@ -114,6 +118,27 @@ public class SharedData
     return globalProps;
     }
     
+public String getDuration(long duration) {
+   
+        long secs = (duration >= SECONDS_IN_A_MINUTE) ? duration % SECONDS_IN_A_MINUTE : duration;
+        long mins = (duration /= SECONDS_IN_A_MINUTE) >= MINUTES_IN_AN_HOUR ? duration%MINUTES_IN_AN_HOUR : duration;
+        long hrs = (duration /= MINUTES_IN_AN_HOUR) >= HOURS_IN_A_DAY ? duration % HOURS_IN_A_DAY : duration;
+        long days = (duration /= HOURS_IN_A_DAY) >= DAYS_IN_A_MONTH ? duration % DAYS_IN_A_MONTH : duration;
+        long months = (duration /=DAYS_IN_A_MONTH) >= MONTHS_IN_A_YEAR ? duration % MONTHS_IN_A_YEAR : duration;
+        long years = (duration /= MONTHS_IN_A_YEAR);
+        
+        StringBuffer sb = new StringBuffer();
+        String EMPTY_STRING = "";
+        sb.append(years > 0 ? years + (years > 1 ? " years " : " year "): EMPTY_STRING);
+        sb.append(months > 0 ? months + (months > 1 ? " months " : " month "): EMPTY_STRING);
+        sb.append(days > 0 ? days + (days > 1 ? " days " : " day "): EMPTY_STRING);
+        sb.append(hrs > 0 ? hrs + (hrs > 1 ? " hours " : " hour "): EMPTY_STRING);
+        sb.append(mins > 0 ? mins + (mins > 1 ? " mins " : " min "): EMPTY_STRING);
+        sb.append(secs > 0 ? secs + (secs > 1 ? " secs " : " secs "): EMPTY_STRING);
+//        sb.append("ago");
+        if(sb.toString().equals("")) return "NA";
+        else return sb.toString();
+    }
 
     public void setIndex(int ind){
         this.index = ind;
@@ -132,6 +157,13 @@ public class SharedData
     DateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
     return df.format(new Date());
     }
+    public static String getFullDateTime()
+    {
+    //DateFormat df = new SimpleDateFormat("HH:mm:ss");
+    DateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
+    return df.format(new Date());
+    }
+    
     public  final static String getYear()
     {
     //DateFormat df = new SimpleDateFormat("HH:mm:ss");
@@ -187,10 +219,10 @@ public class SharedData
             DateFormat df_event_time = new SimpleDateFormat("HH:mm:ss");
             Str_event_date = Str_event_date + df_event_time.format(rtc_event_date_time);            
             ed.date_time = Str_event_date;            
-            ed.Count1 = (int)((DF_recieved.data[6] & 0xFF) << 8) + (DF_recieved.data[5] & 0xFF);
-            ed.Count2 = (int)((DF_recieved.data[8] & 0xFF) << 8) + (DF_recieved.data[7] & 0xFF);
-            ed.Count3 = (int)((DF_recieved.data[10] & 0xFF) << 8) + (DF_recieved.data[9] & 0xFF);
-            ed.Count4 = (int)((DF_recieved.data[12] & 0xFF) << 8) + (DF_recieved.data[11] & 0xFF); 
+            ed.Count1 = (int)((DF_recieved.data[6] & 0xFF) << 8) + (DF_recieved.data[5] & 0xFF); //local fwd
+            ed.Count2 = (int)((DF_recieved.data[8] & 0xFF) << 8) + (DF_recieved.data[7] & 0xFF);  // local reverse
+            ed.Count3 = (int)((DF_recieved.data[10] & 0xFF) << 8) + (DF_recieved.data[9] & 0xFF);  // remote forward
+            ed.Count4 = (int)((DF_recieved.data[12] & 0xFF) << 8) + (DF_recieved.data[11] & 0xFF);  //remote reverse
             ed.CPU_Addrs = DF_recieved.CPU_address;
             event_list.add(ed);  
             }
