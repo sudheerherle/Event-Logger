@@ -9,3 +9,4 @@
 *.properties
 Event Logger/nbproject/private/private.xml
 Event Logger/nbproject/build-impl.xml
+Event Logger/nbproject/private/private.properties
