@@ -1,7 +1,6 @@
 /*
  * EventLoggerView.java
  */
-
 package eventlogger;
 
 import com.healthmarketscience.jackcess.ColumnBuilder;
@@ -137,6 +136,7 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.omg.PortableServer.POAManagerPackage.State;
+
 /**
  * The application's main frame.
  */
@@ -144,9 +144,9 @@ public class EventLoggerView extends FrameView {
 
     SharedData sharedData = SharedData.getSingletonObject();
     private SerialHelper sh = new SerialHelper();
-    private static byte[] poll_port = new byte[]{0x1,0x0};
-    private  TimerTask Blinker_Task ;
-    
+    private static byte[] poll_port = new byte[]{0x1, 0x0};
+    private TimerTask Blinker_Task;
+
     String fullPath = "";
     UtilDateModel from_model = new UtilDateModel();
     UtilDateModel to_model = new UtilDateModel();
@@ -156,68 +156,74 @@ public class EventLoggerView extends FrameView {
     private boolean time_out = false;
     private SerialHelper serial_helper;
     private DataFrame DF_recieved;
-    
-    byte GET_LOGGED_EVENTS      =0;		/* Type: Command for getting logged events */
-    byte SET_RTC_DATE_AND_TIME	=1;		/* Type: Command for Setting Date and Time */ 
-    byte GET_RTC_DATE_TIME	=2;		/* Type: Command for getting system Date and Time */
-    byte ERASE_EVENTS_EEPROM	=3;		/* Type: Command for Erasing all logged events */
-    byte GET_DAC_STATUS         =4;
-    byte REPLY_TO_RECORDS	=5;		/* Type: Reply of Record Reception status from Host/Smc */ 
-    byte GET_EVENT_COUNTS	=6;		/* Type: Command for receving number of events, start date and end date*/ 
-    
-    int GET_LOGGED_EVENTS_Length 	= 6;
-    int SET_RTC_DATE_AND_TIME_Length 	= 11;	  
-    int GET_RTC_DATE_TIME_Length	= 4;
-    int ERASE_EVENTS_EEPROM_Length	= 4;
-    int GET_DAC_STATUS_Length		= 4;
-    int REPLY_TO_RECORDS_Length         = 5;		
-    int GET_EVENT_COUNTS_Length         = 4;
-    
-    int GET_LOGGED_EVENTS_Resp_Length 	= 19;
-    int SET_RTC_DATE_AND_TIME_Resp_Length 	= 10;	  
-    int GET_RTC_DATE_TIME_Resp_Length	= 10;
-    int ERASE_EVENTS_EEPROM_Resp_Length	= 6;
-    int GET_DAC_STATUS_Resp_Length		= 10;
-    int REPLY_TO_RECORDS_Resp_Length         = 19;		
-    int GET_EVENT_COUNTS_Resp_Length         = 18;
+
+    byte GET_LOGGED_EVENTS = 0;
+    /* Type: Command for getting logged events */
+    byte SET_RTC_DATE_AND_TIME = 1;
+    /* Type: Command for Setting Date and Time */
+    byte GET_RTC_DATE_TIME = 2;
+    /* Type: Command for getting system Date and Time */
+    byte ERASE_EVENTS_EEPROM = 3;
+    /* Type: Command for Erasing all logged events */
+    byte GET_DAC_STATUS = 4;
+    byte REPLY_TO_RECORDS = 5;
+    /* Type: Reply of Record Reception status from Host/Smc */
+    byte GET_EVENT_COUNTS = 6;
+    /* Type: Command for receving number of events, start date and end date*/
+
+    int GET_LOGGED_EVENTS_Length = 6;
+    int SET_RTC_DATE_AND_TIME_Length = 11;
+    int GET_RTC_DATE_TIME_Length = 4;
+    int ERASE_EVENTS_EEPROM_Length = 4;
+    int GET_DAC_STATUS_Length = 4;
+    int REPLY_TO_RECORDS_Length = 5;
+    int GET_EVENT_COUNTS_Length = 4;
+
+    int GET_LOGGED_EVENTS_Resp_Length = 19;
+    int SET_RTC_DATE_AND_TIME_Resp_Length = 10;
+    int GET_RTC_DATE_TIME_Resp_Length = 10;
+    int ERASE_EVENTS_EEPROM_Resp_Length = 6;
+    int GET_DAC_STATUS_Resp_Length = 10;
+    int REPLY_TO_RECORDS_Resp_Length = 19;
+    int GET_EVENT_COUNTS_Resp_Length = 18;
     private byte cpu_Addrs = 0;
     boolean erase_command_sent = false;
     private String port;
     private TimerTask Com_Blinker_Task;
     private int unit_type;
-    private String unit_type_txt ="";
+    private String unit_type_txt = "";
     LinkedList<EventDetails> event_list = new LinkedList();
 //    private CTableHandler tabHandle;
     private Timer timeout_timer = new Timer();
     private boolean Stop_Updating = false;
-    private String Network_ID="NA";
+    private String Network_ID = "NA";
     private int percent = 0;
-    private String[] tableColumns = {"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Loc Fwd","Rem Fwd","Loc Rev","Rem Rev","Total Wheels"};
-    private  MyTableModel model = new MyTableModel();    
+    private String[] tableColumns = {"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "Loc Fwd", "Rem Fwd", "Loc Rev", "Rem Rev", "Total Wheels"};
+    private MyTableModel model = new MyTableModel();
     private SingleFrameApplication sfa = null;
     private long rtctime_diff;
     private long total_good_time = 0;
     private long total_bad_time = 0;
     TimeSeries time_series_up_time = new TimeSeries("SSDAC System Up time");
     TimeSeries time_series_down_time = new TimeSeries("SSDAC System down time");
-    
+
     public EventLoggerView(SingleFrameApplication app) {
         super(app);
         sfa = app;
-        initComponents();  
+        initComponents();
         jButton7.setVisible(false);
-        Color clear_color = new Color(0,128,0);
+        Color clear_color = new Color(0, 128, 0);
         jLabel21.setForeground(clear_color);
         jLabel23.setForeground(Color.RED);
         jLabel25.setForeground(Color.BLUE);
         jTabbedPane1.addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
-            int click = jTabbedPane1.getSelectedIndex();
-            System.out.println("Tab: " + click);
-            if(click == 6){
-                Calculate_MUT_MDT();
-                new ChartWorker().execute();    
-            }
+            public void stateChanged(ChangeEvent e) {
+                int click = jTabbedPane1.getSelectedIndex();
+                System.out.println("Tab: " + click);
+                if (click == 6) {
+                    Calculate_MUT_MDT();
+                    new ChartWorker().execute();
+                }
 //               else if(click == 2){
 //                Thread thread = new Thread(new UpdateRTCTime(sfa));
 //                thread.start();
@@ -234,14 +240,14 @@ public class EventLoggerView extends FrameView {
 //                }
 //                }
 //            }
-        }
+            }
         });
         isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
-        getInputArguments().toString().indexOf("jdwp") >= 0;
+                getInputArguments().toString().indexOf("jdwp") >= 0;
 //        JFrame frame = new JFrame();
-        
-          model = new MyTableModel();
-          jTable1.setModel(model);
+
+        model = new MyTableModel();
+        jTable1.setModel(model);
 //          JTable table = new JTable(model);
 //          frame.setLayout(new BorderLayout());
 //                frame.add(new JScrollPane(table));
@@ -270,91 +276,90 @@ public class EventLoggerView extends FrameView {
         jTabbedPane1.setIconAt(6, setting);
         // status bar initialization - message timeout, idle icon and busy animation, etc
         ResourceMap resourceMap = getResourceMap();
-        
+
         port = "";
-        if(usb.isSelected()){
+        if (usb.isSelected()) {
             port = "USB";
-        }   
-        
-         Blinker_Task = new TimerTask() {
+        }
+
+        Blinker_Task = new TimerTask() {
             @Override
             public void run() {
-            timelbl.setText(sharedData.getDateTime());
-            datelbl.setText(sharedData.getDate());
-            if(rtctime_diff!=0){
-                Date dt = new Date();
-                long timenow = dt.getTime();
-                DateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
-                rtctime_diff = rtctime_diff + 1000;
-                String dmy = df.format(rtctime_diff);
+                timelbl.setText(sharedData.getDateTime());
+                datelbl.setText(sharedData.getDate());
+                if (rtctime_diff != 0) {
+                    Date dt = new Date();
+                    long timenow = dt.getTime();
+                    DateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
+                    rtctime_diff = rtctime_diff + 1000;
+                    String dmy = df.format(rtctime_diff);
 
-                DateFormat h = new SimpleDateFormat("HH:mm:ss");   
-                String hms = h.format(rtctime_diff);
+                    DateFormat h = new SimpleDateFormat("HH:mm:ss");
+                    String hms = h.format(rtctime_diff);
 
-                RTC_dateLbl.setText(dmy);
-                timelbl1.setText(hms);
+                    RTC_dateLbl.setText(dmy);
+                    timelbl1.setText(hms);
+                }
             }
-            }
-         };
-         
-        Timer timer = new Timer();        
+        };
+
+        Timer timer = new Timer();
         timer.scheduleAtFixedRate(Blinker_Task, 0, 1000);
-        
+
         Timeout_task = new TimerTask() {
             @Override
             public void run() {
                 time_out = false;
             }
         };
-        
+
 //        Write_Timeout_task = new TimerTask() {
 //            @Override
 //            public void run() {
 //                time_out = true;
 //            }
 //        };       
-        
         Com_Blinker_Task = new TimerTask() {
             @Override
             public void run() {
-             //if(sharedData.connected == false){
-             //    com_connect();
-             //}
-             if(sharedData.connected){
-                 BtnConnect.setText("Disconnect");
-                 if(connection_indicator_panel.getBackground()==Color.GREEN){
-                     connection_indicator_panel.setBackground(Color.GRAY);
-                 }else{
-                     connection_indicator_panel.setBackground(Color.GREEN);
-                 }
-                 if(sharedData.connectedToHardware){
-                 if(connection_indicator_panel1.getBackground()==Color.GREEN){
-                     connection_indicator_panel1.setBackground(Color.GRAY);
-                 }else{
-                     connection_indicator_panel1.setBackground(Color.GREEN);
-                 }
-                 }else{
-                     if(connection_indicator_panel1.getBackground()==Color.RED){
-                    connection_indicator_panel1.setBackground(Color.GRAY);
-                }else{
-                    connection_indicator_panel1.setBackground(Color.RED);
-                }
-                }
-            }else{
-                BtnConnect.setText("Connect");
-                if(connection_indicator_panel.getBackground()==Color.RED){
-                    connection_indicator_panel.setBackground(Color.GRAY);
-                }else{
-                    connection_indicator_panel.setBackground(Color.RED);
-                }
-                if(connection_indicator_panel1.getBackground()==Color.RED){
-                    connection_indicator_panel1.setBackground(Color.GRAY);
-                }else{
-                    connection_indicator_panel1.setBackground(Color.RED);
+                //if(sharedData.connected == false){
+                //    com_connect();
+                //}
+                if (sharedData.connected) {
+                    BtnConnect.setText("Disconnect");
+                    if (connection_indicator_panel.getBackground() == Color.GREEN) {
+                        connection_indicator_panel.setBackground(Color.GRAY);
+                    } else {
+                        connection_indicator_panel.setBackground(Color.GREEN);
+                    }
+                    if (sharedData.connectedToHardware) {
+                        if (connection_indicator_panel1.getBackground() == Color.GREEN) {
+                            connection_indicator_panel1.setBackground(Color.GRAY);
+                        } else {
+                            connection_indicator_panel1.setBackground(Color.GREEN);
+                        }
+                    } else {
+                        if (connection_indicator_panel1.getBackground() == Color.RED) {
+                            connection_indicator_panel1.setBackground(Color.GRAY);
+                        } else {
+                            connection_indicator_panel1.setBackground(Color.RED);
+                        }
+                    }
+                } else {
+                    BtnConnect.setText("Connect");
+                    if (connection_indicator_panel.getBackground() == Color.RED) {
+                        connection_indicator_panel.setBackground(Color.GRAY);
+                    } else {
+                        connection_indicator_panel.setBackground(Color.RED);
+                    }
+                    if (connection_indicator_panel1.getBackground() == Color.RED) {
+                        connection_indicator_panel1.setBackground(Color.GRAY);
+                    } else {
+                        connection_indicator_panel1.setBackground(Color.RED);
+                    }
                 }
             }
-            }
-         };
+        };
         Timer timer1 = new Timer();
         timer1.scheduleAtFixedRate(Com_Blinker_Task, 0, 300);
         jTabbedPane1.setSelectedIndex(0);
@@ -366,7 +371,7 @@ public class EventLoggerView extends FrameView {
 //                }
 //        }
 //        BtnConnect.doClick();
-        
+
 //        UtilDateModel model = new UtilDateModel();
 //model.setDate(20,04,2014);
 // Need this...
@@ -377,40 +382,40 @@ public class EventLoggerView extends FrameView {
         JDatePanelImpl datePanel = new JDatePanelImpl(from_model, p);
         // Don't know about the formatter, but there it is...
         JDatePickerImpl fromDate = new JDatePickerImpl(datePanel, new DateLabelFormatter());
-        
+
 //        jPanel18.setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.weightx = 100.0;
-        jPanel18.add(fromDate,c);
+        jPanel18.add(fromDate, c);
 //        UtilDateModel tomodel = new UtilDateModel();
         to_model.setValue(new Date());
         JDatePanelImpl todatePanel = new JDatePanelImpl(to_model, p);
         // Don't know about the formatter, but there it is...
         JDatePickerImpl toDate = new JDatePickerImpl(todatePanel, new DateLabelFormatter());
 //        jPanel19.setLayout(new GridBagLayout());
-        jPanel19.add(toDate,c);
+        jPanel19.add(toDate, c);
         ButtonGroup bg = new ButtonGroup();
         bg.add(jRadioButton1);
         bg.add(jRadioButton2);
         jRadioButton1.setSelected(true);
-        if(sharedData.event_list == null || sharedData.event_list.size() == 0){
+        if (sharedData.event_list == null || sharedData.event_list.size() == 0) {
             SwingUtilities.invokeLater(
-              new Runnable() {
+                    new Runnable() {
                 public void run() {
-                  jTabbedPane1.setSelectedIndex(0);
+                    jTabbedPane1.setSelectedIndex(0);
                 }
-              }
+            }
             );
         }
     }
 
-     public boolean SendPacketRecieveResponse(DataFrame df){
-        boolean retval  = false;    
+    public boolean SendPacketRecieveResponse(DataFrame df) {
+        boolean retval = false;
         retval = SendData(df);
-        return retval; 
-    } 
-    
-         public class MyTableModel extends AbstractTableModel {
+        return retval;
+    }
+
+    public class MyTableModel extends AbstractTableModel {
 
 //        private String[] columnNames = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Remote Forward","Local Reverse","Remote Reverse","Total Train Wheels"};
         private List<RowData> data;
@@ -442,7 +447,7 @@ public class EventLoggerView extends FrameView {
         @Override
         public Object getValueAt(int row, int col) {
             RowData value = data.get(row);
-            String d =  value.getData()[col];
+            String d = value.getData()[col];
 //            System.out.println(d);
             return d;//col == 0 ? value.getDate() : value.getRow();
         }
@@ -463,8 +468,8 @@ public class EventLoggerView extends FrameView {
             fireTableRowsInserted(rowCount, getRowCount() - 1);
         }
     }
-         
-          public class TimeCellRenderer extends DefaultTableCellRenderer {
+
+    public class TimeCellRenderer extends DefaultTableCellRenderer {
 
         private DateFormat df;
 
@@ -474,7 +479,7 @@ public class EventLoggerView extends FrameView {
 
         @Override
         public Component getTableCellRendererComponent(JTable table,
-            Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
             if (value instanceof Date) {
 
@@ -489,33 +494,34 @@ public class EventLoggerView extends FrameView {
         }
     }
 
-     private static int ModRTU_CRC(byte[] buf)
-        {
+    private static int ModRTU_CRC(byte[] buf) {
         int crc = 0xFFFF;
         int len = buf.length;
         for (int pos = 0; pos < len; pos++) {
-        int temp = (int)(buf[pos] & 0xFF);
-        crc ^= temp; // XOR byte into least sig. byte of crc
+            int temp = (int) (buf[pos] & 0xFF);
+            crc ^= temp; // XOR byte into least sig. byte of crc
 
-        for (int i = 8; i != 0; i--) { // Loop over each bit
-        if ((crc & 0x0001) != 0) { // If the LSB is set
-        crc >>= 1; // Shift right and XOR 0xA001
-        crc ^= 0xA001;
-        }
-        else // Else LSB is not set
-        crc >>= 1; // Just shift right
-        }
+            for (int i = 8; i != 0; i--) { // Loop over each bit
+                if ((crc & 0x0001) != 0) { // If the LSB is set
+                    crc >>= 1; // Shift right and XOR 0xA001
+                    crc ^= 0xA001;
+                } else // Else LSB is not set
+                {
+                    crc >>= 1; // Just shift right
+                }
+            }
         }
         // Note, this number has low and high bytes swapped, so use it accordingly (or swap bytes)
         return crc;
-        }
-     public void GiveResponse(final String string, final Color color) {
-        
-         javax.swing.SwingUtilities.invokeLater(new Runnable() {
-        public void run() {
-           lblStatus(string, color,3000);
-        }
-    });
+    }
+
+    public void GiveResponse(final String string, final Color color) {
+
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                lblStatus(string, color, 3000);
+            }
+        });
 //         Thread te = new Thread(new Runnable() {
 //
 //        public void run()
@@ -525,127 +531,128 @@ public class EventLoggerView extends FrameView {
 //        });
 //        te.start();
     }
-    
-        public void lblStatus(String string,Color g,long time){
-        Icon ic=null;
-        final long timeOut  = time;
+
+    public void lblStatus(String string, Color g, long time) {
+        Icon ic = null;
+        final long timeOut = time;
         lblStatus.setForeground(g);//setBackground(g);
         lblStatus.setText(string);
         lblStatus.setVisible(true);
-        if(g==Color.RED){
-          ic=this.getResourceMap().getIcon("wrong.icon");
+        if (g == Color.RED) {
+            ic = this.getResourceMap().getIcon("wrong.icon");
+        } else if (g == Color.BLUE) {
+            ic = this.getResourceMap().getIcon("correct.icon");
+        } else {
+            ic = null;
         }
-        else if(g==Color.BLUE){
-           ic= this.getResourceMap().getIcon("correct.icon");
-        }        
-        else{
-            ic =null;
-        }
-        if(string.equals("")){
-          ic = null;
+        if (string.equals("")) {
+            ic = null;
         }
         lblStatus.setIcon(ic);
-        
+
         Thread te = new Thread(new Runnable() {
 
-        public void run()
-        {
-            try{
-                Sleep(timeOut);
-                if(timeOut!=0){
-                lblStatus.setText("");
-                lblStatus.setIcon(null);
-                ClearStatusLabel();
+            public void run() {
+                try {
+                    Sleep(timeOut);
+                    if (timeOut != 0) {
+                        lblStatus.setText("");
+                        lblStatus.setIcon(null);
+                        ClearStatusLabel();
+                    }
+                } catch (Exception x) {
+
                 }
-            }catch(Exception x){
-                
             }
-        }
         });
         te.start();
-        
+
     }
-        
-        private void Sleep(long t){
+
+    private void Sleep(long t) {
         try {
             Thread.sleep(t);
         } catch (InterruptedException ex) {
             Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
         }
-        }
-    private void ClearStatusLabel(){
+    }
+
+    private void ClearStatusLabel() {
         lblStatus.setText("");
         lblStatus.setIcon(null);
         lblStatus.setForeground(Color.BLACK);
-    } 
-    public boolean com_connect(String port){
+    }
+
+    public boolean com_connect(String port) {
         boolean retval = false;
 //        try {
-                controlAllButtons(false);
-                sh.disconnect();
-                sharedData.connected = false;
-                sharedData.connectedToHardware = false;
-                String[] ports = new String[1];
-                if(port=="USB"){
-                    ports = sh.getSerialPorts();
-                    if(ports.length==0){
-                        GiveResponse("Insys Digital SSDAC Event Logger not connected", Color.RED);
-                        retval = false;
-                    }
-                }
-                else ports[0] = port;                
-                for(int p = 0; p< ports.length;p++){
-                GiveResponse("Connecting to the event logger for the first time. Please wait...", Color.blue);  
-                try{
-                if(sh.connect(ports[p], 9600)){
-                    GiveResponse("Connected to "+port, Color.BLUE);
+        controlAllButtons(false);
+        sh.disconnect();
+        sharedData.connected = false;
+        sharedData.connectedToHardware = false;
+        String[] ports = new String[1];
+        if (port == "USB") {
+            ports = sh.getSerialPorts();
+            if (ports.length == 0) {
+                GiveResponse("Insys Digital SSDAC Event Logger not connected", Color.RED);
+                retval = false;
+            }
+        } else {
+            ports[0] = port;
+        }
+        for (int p = 0; p < ports.length; p++) {
+            GiveResponse("Connecting to the event logger for the first time. Please wait...", Color.blue);
+            try {
+                if (sh.connect(ports[p], 9600)) {
+                    GiveResponse("Connected to " + port, Color.BLUE);
                     sharedData.connected = true;
                     DataFrame df = new DataFrame();
                     df.CMD = GET_DAC_STATUS;
                     df.CPU_address = 0x55;
                     df.data = new byte[0];
-                    if(SendPacketRecieveResponse(df)){
-                     sharedData.connectedToHardware = true;
-                     GiveResponse("Event logger is communicating successfully.", Color.BLUE);
-                     retval =  true;
-                     break;
-                    }else{
+                    if (SendPacketRecieveResponse(df)) {
+                        sharedData.connectedToHardware = true;
+                        GiveResponse("Event logger is communicating successfully.", Color.BLUE);
+                        retval = true;
+                        break;
+                    } else {
                         retval = false;
-                    }                    
-                } }catch(IOException ex){
-                    
+                    }
                 }
-                }
+            } catch (IOException ex) {
+
+            }
+        }
         controlAllButtons(true);
         return retval;
     }
-   
-private void prepareChart(){
+
+    private void prepareChart() {
         jPanel17.removeAll();
-        DefaultPieDataset dataset = new DefaultPieDataset(); 
-        int normal=0;
-        int error=0;
-        int missing=0;
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        int normal = 0;
+        int error = 0;
+        int missing = 0;
         //Image mainLogo = Toolkit.getDefaultToolkit().getImage(EventLoggerView.class.getResource("resources/insys_logo.png"));        
         String evt_desc = "";
         LinkedList<EventDetails> ed = sharedData.get_logged_events();
-        for(int i=0;i<ed.size();i++){
-            evt_desc  = get_event_desc(ed.get(i).event_ID);
-            if(evt_desc.contains("Missing")){
+        for (int i = 0; i < ed.size(); i++) {
+            evt_desc = get_event_desc(ed.get(i).event_ID);
+            if (evt_desc.contains("Missing")) {
                 missing++;
-            }else if(evt_desc.contains("Failure")
-                    ||evt_desc.contains("Defective")
-                     ||evt_desc.contains("Failed")
-                     ||evt_desc.contains("Mismatch")
-                     ||evt_desc.contains("Direct")
-                     ||evt_desc.contains("Pulsating")
-                     ||evt_desc.contains("NOT Detecting")
-                     ||evt_desc.contains("Influence")
-                     ||evt_desc.contains("Theft")
-                     ||evt_desc.contains("Door Open")
-                     ||evt_desc.contains("BAD")){
+            } else if (evt_desc.contains("Failure")
+                    || evt_desc.contains("Defective")
+                    || evt_desc.contains("Failed")
+                    || evt_desc.contains("Mismatch")
+                    || evt_desc.contains("Direct")
+                    || evt_desc.contains("Pulsating")
+                    || evt_desc.contains("NOT Detecting")
+                    || evt_desc.contains("Influence")
+                    || evt_desc.contains("Theft")
+                    || evt_desc.contains("Door Open")
+                    || evt_desc.contains("BAD")) {
                 error++;
-            }else if(evt_desc.contains("Normal")||evt_desc.contains("Clear")){
+            } else if (evt_desc.contains("Normal") || evt_desc.contains("Clear")) {
                 normal++;
             }
         }
@@ -655,12 +662,12 @@ private void prepareChart(){
         JFreeChart chart3 = ChartFactory.createPieChart3D("SSDAC Event Categories", dataset, true, true, true);
         PiePlot3D plot3 = (PiePlot3D) chart3.getPlot();
         plot3.setDarkerSides(true);
-        plot3.setForegroundAlpha(0.7f);        
+        plot3.setForegroundAlpha(0.7f);
         plot3.setCircular(true);
         jPanel17.add(new ChartPanel(chart3));
-        jPanel17.repaint(); 
+        jPanel17.repaint();
         jPanel17.invalidate();
-        
+
 //        jPanel17.removeAll();
         final XYDataset time_dataset = createDataset();
         final JFreeChart chart = createChart(time_dataset);
@@ -669,34 +676,34 @@ private void prepareChart(){
         jPanel17.add(chartPanel);
         jPanel17.repaint();
         jPanel17.invalidate();
-}
-    
-    public boolean com_disconnect(){
+    }
+
+    public boolean com_disconnect() {
         boolean retval = false;
-        try{
+        try {
             sh.disconnect();
-            GiveResponse("Disconnected from "+port, Color.RED);
+            GiveResponse("Disconnected from " + port, Color.RED);
             sharedData.connected = false;
             retval = true;
-        }
-        catch(Exception ex){
+        } catch (Exception ex) {
             retval = false;
         }
         return retval;
     }
-        private boolean serialPortWrite(byte[] data){
+
+    private boolean serialPortWrite(byte[] data) {
         boolean retval = false;
         try {
-            if(sh.getSerialOutputStream() == null){
-               if(com_connect(port)){
-               sh.getSerialOutputStream().write(data);
-               retval =  true;
-            }
-            else retval = false;
-            }
-            else{
-               sh.getSerialOutputStream().write(data);
-               retval =  true;
+            if (sh.getSerialOutputStream() == null) {
+                if (com_connect(port)) {
+                    sh.getSerialOutputStream().write(data);
+                    retval = true;
+                } else {
+                    retval = false;
+                }
+            } else {
+                sh.getSerialOutputStream().write(data);
+                retval = true;
             }
         } catch (IOException ex) {
             sharedData.connected = false;
@@ -706,18 +713,18 @@ private void prepareChart(){
             //Logger.getLogger(SimpleSerialPort.class.getName()).log(Level.SEVERE, null, ex);
         }
         return retval;
-    }     
-        
-    void Buttons(boolean b, boolean progress){
+    }
+
+    void Buttons(boolean b, boolean progress) {
         progressBar.setIndeterminate(progress);
         BtnConnect.setEnabled(b);
-        jTabbedPane1.setEnabledAt(0,b);
-        jTabbedPane1.setEnabledAt(1,b);
-        jTabbedPane1.setEnabledAt(2,b);
-        jTabbedPane1.setEnabledAt(3,b);
-        jTabbedPane1.setEnabledAt(4,b);
-        jTabbedPane1.setEnabledAt(5,b);  
-        jTabbedPane1.setEnabledAt(6,b);  
+        jTabbedPane1.setEnabledAt(0, b);
+        jTabbedPane1.setEnabledAt(1, b);
+        jTabbedPane1.setEnabledAt(2, b);
+        jTabbedPane1.setEnabledAt(3, b);
+        jTabbedPane1.setEnabledAt(4, b);
+        jTabbedPane1.setEnabledAt(5, b);
+        jTabbedPane1.setEnabledAt(6, b);
         jButton2.setEnabled(b);
         jButton3.setEnabled(b);
         cpuselectCmbBx.setEnabled(b);
@@ -730,20 +737,21 @@ private void prepareChart(){
         jButton7.setEnabled(b);
         jButton8.setEnabled(b);
 //        TblData.setEnabled(b);
-        BtnEraseEventsinLogger.setEnabled(b);  
-    }  
+        BtnEraseEventsinLogger.setEnabled(b);
+    }
+
     private void controlAllButtons(boolean b) {
-        if(b==false){
+        if (b == false) {
             progressBar.setIndeterminate(true);
+        } else {
+            progressBar.setIndeterminate(false);
         }
-        else{
-           progressBar.setIndeterminate(false);
-        }
-       Buttons(b,!b);
-     }
-    private int get_size_of_packet(int cmd){
-        int size =0;
-        switch(cmd){
+        Buttons(b, !b);
+    }
+
+    private int get_size_of_packet(int cmd) {
+        int size = 0;
+        switch (cmd) {
             case 0:
                 size = GET_LOGGED_EVENTS_Length;
                 break;
@@ -765,54 +773,54 @@ private void prepareChart(){
             case 6:
                 size = GET_EVENT_COUNTS_Length;
                 break;
-                       
+
         }
         return size;
     }
-    private byte[] getArrayFromPacket(DataFrame df){
+
+    private byte[] getArrayFromPacket(DataFrame df) {
         int size_of_packet = get_size_of_packet(df.CMD);
-        byte[] array_data  = new byte[size_of_packet];
+        byte[] array_data = new byte[size_of_packet];
         array_data[0] = df.CPU_address;
         array_data[1] = df.CMD;
-        System.arraycopy(df.data, 0, array_data, 2, array_data.length-4);
-        byte[] temp = new byte[size_of_packet-2];
+        System.arraycopy(df.data, 0, array_data, 2, array_data.length - 4);
+        byte[] temp = new byte[size_of_packet - 2];
         System.arraycopy(array_data, 0, temp, 0, temp.length);
         int crc16 = ModRTU_CRC(temp);
-        array_data[size_of_packet-2] = (byte) (crc16 >>8 & 0xFF);
-        array_data[size_of_packet-1] = (byte) (crc16 & 0xFF);
+        array_data[size_of_packet - 2] = (byte) (crc16 >> 8 & 0xFF);
+        array_data[size_of_packet - 1] = (byte) (crc16 & 0xFF);
         return array_data;
     }
-    
-    
-    private boolean SendData(DataFrame frame){
+
+    private boolean SendData(DataFrame frame) {
         byte[] data_to_send = getArrayFromPacket(frame);
-        System.out.println("Sent: "+Arrays.toString(data_to_send));
+        System.out.println("Sent: " + Arrays.toString(data_to_send));
         sharedData.dataRecievedFlag = false;
-        if(serialPortWrite(data_to_send)){
-           return wait_for_resp();  
-        }
-        else{             
+        if (serialPortWrite(data_to_send)) {
+            return wait_for_resp();
+        } else {
             return false;
         }
     }
-    
-        public boolean wait_for_resp(){
+
+    public boolean wait_for_resp() {
         boolean retval = false;
         sharedData.time_out = false;
         TimerThread th = new TimerThread();
         sharedData.time_out = false;
-        if(!erase_command_sent)
-        timeout_timer.schedule(th, 3000);
+        if (!erase_command_sent) {
+            timeout_timer.schedule(th, 3000);
+        }
 //        timeout_timer.schedule(new TimerThread(), 10000);
-        while (sharedData.dataRecievedFlag==false && sharedData.time_out == false){
+        while (sharedData.dataRecievedFlag == false && sharedData.time_out == false) {
             Thread.yield();
         }
-        if(sharedData.time_out){
+        if (sharedData.time_out) {
             sharedData.time_out = false;
-            sh.disconnect(); 
+            sh.disconnect();
             return false;
         }
-        if(sharedData.dataRecievedFlag == false){
+        if (sharedData.dataRecievedFlag == false) {
             this.com_disconnect();
             return false;
         }
@@ -820,120 +828,119 @@ private void prepareChart(){
         sharedData.dataRecievedFlag = false;
         DF_recieved = sharedData.DF_recieved;
         int cmd = DF_recieved.CMD;
-        switch(cmd){
-            
+        switch (cmd) {
+
 //            case 0:
 //            wait_for_resp();
 //            break;
             case 1:         // GET RTC DATE TIME
-            long mktime =0;
-            mktime = (DF_recieved.data[3] & 0xFF) << 24;
-            mktime = mktime + ((DF_recieved.data[2] & 0xFF) << 16);
-            mktime = mktime + ((DF_recieved.data[1]&0xFF) << 8);
-            mktime = mktime + (DF_recieved.data[0]&0xFF);
-            mktime = mktime - (330*60);
-            mktime = mktime * 1000;
-            DateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
-            Date rtc_date_time = new Date(mktime);
-            Date time_now = new Date();
-            long timenow = time_now.getTime();
-            long rtctime = rtc_date_time.getTime();
-            long diff = timenow - rtctime;    
-            rtctime_diff = rtctime;
-            RTC_dateLbl.setText(df.format(rtc_date_time));
-            DateFormat df_time = new SimpleDateFormat("HH:mm:ss");
-            timelbl1.setText((df_time.format(rtc_date_time)));      
-            this.getFrame().repaint();
-            this.getFrame().validate();
-            GiveResponse("Updated the date and time from Event logger", Color.BLUE);
-            if(diff > 60000 || diff < -60000){
-                JOptionPane.showMessageDialog(this.getFrame(), "Time mismatch of more than a minute is observed.\nPlease consider setting correct time.", "Time mismatch", JOptionPane.ERROR_MESSAGE);
-            }
-            retval = true;
-            break;   
-            
+                long mktime = 0;
+                mktime = (DF_recieved.data[3] & 0xFF) << 24;
+                mktime = mktime + ((DF_recieved.data[2] & 0xFF) << 16);
+                mktime = mktime + ((DF_recieved.data[1] & 0xFF) << 8);
+                mktime = mktime + (DF_recieved.data[0] & 0xFF);
+                mktime = mktime - (330 * 60);
+                mktime = mktime * 1000;
+                DateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
+                Date rtc_date_time = new Date(mktime);
+                Date time_now = new Date();
+                long timenow = time_now.getTime();
+                long rtctime = rtc_date_time.getTime();
+                long diff = timenow - rtctime;
+                rtctime_diff = rtctime;
+                RTC_dateLbl.setText(df.format(rtc_date_time));
+                DateFormat df_time = new SimpleDateFormat("HH:mm:ss");
+                timelbl1.setText((df_time.format(rtc_date_time)));
+                this.getFrame().repaint();
+                this.getFrame().validate();
+                GiveResponse("Updated the date and time from Event logger", Color.BLUE);
+                if (diff > 60000 || diff < -60000) {
+                    JOptionPane.showMessageDialog(this.getFrame(), "Time mismatch of more than a minute is observed.\nPlease consider setting correct time.", "Time mismatch", JOptionPane.ERROR_MESSAGE);
+                }
+                retval = true;
+                break;
+
             case 2:
-            lblStatus.setText("Event logger is erasing all the events. Please wait...");
-            lblStatus.setForeground(Color.BLUE);
-            wait_for_resp();
-            retval = true;
-            break;
-            
+                lblStatus.setText("Event logger is erasing all the events. Please wait...");
+                lblStatus.setForeground(Color.BLUE);
+                wait_for_resp();
+                retval = true;
+                break;
+
             case 3:
-            this.cpu_Addrs = DF_recieved.CPU_address;
-            this.unit_type = (int)DF_recieved.data[0];
-            this.Network_ID = Long.toString(0xff & (long)DF_recieved.data[1]);
-            
-            UpdateStatusPanel();
-            retval = true;
-            break;
+                this.cpu_Addrs = DF_recieved.CPU_address;
+                this.unit_type = (int) DF_recieved.data[0];
+                this.Network_ID = Long.toString(0xff & (long) DF_recieved.data[1]);
+
+                UpdateStatusPanel();
+                retval = true;
+                break;
             case 4:
-            GiveResponse("Updated all the events", Color.BLUE);
-            retval = true;
-            break;
+                GiveResponse("Updated all the events", Color.BLUE);
+                retval = true;
+                break;
             case 5:
-            GiveResponse("Sucessfully erased all events from Event Logger", Color.BLUE);
-            sharedData.getSingletonObject().event_list.clear();
-            retval = true;
-            break;
-           
+                GiveResponse("Sucessfully erased all events from Event Logger", Color.BLUE);
+                sharedData.getSingletonObject().event_list.clear();
+                retval = true;
+                break;
+
             case 6:
-            int total_events = 0;
-            total_events = total_events + (DF_recieved.data[0] & 0xFF);
-            total_events = total_events  + ((DF_recieved.data[1] & 0xFF) << 8);
-            total_events = (total_events ) + ((DF_recieved.data[2] & 0xFF) << 16);
-            total_events = (total_events ) + ((DF_recieved.data[3] & 0xFF)<< 24);
-            
-            long from_time =0;
-            String Str_from_date = "";
-            from_time = (DF_recieved.data[7] & 0xFF) << 24;
-            from_time = from_time + ((DF_recieved.data[6] & 0xFF) << 16);
-            from_time = from_time + ((DF_recieved.data[5]&0xFF) << 8);
-            from_time = from_time + (DF_recieved.data[4]&0xFF);
-            from_time = from_time - (330*60);
-            from_time = from_time * 1000;
-            if(from_time == 0){
-               Str_from_date = "N/A"; 
-            }else{
-                DateFormat from_date = new SimpleDateFormat("dd-MMM-yyyy  ");
-                Date rtc_from_date_time = new Date(from_time);
-                Str_from_date = from_date.format(rtc_from_date_time);
-                DateFormat df_from_time = new SimpleDateFormat("HH:mm:ss");
-                Str_from_date = Str_from_date + df_from_time.format(rtc_from_date_time);
-            }
-            long to_time =0;
-            String Str_to_date = "";
-            to_time = (DF_recieved.data[11] & 0xFF) << 24;
-            to_time = to_time + ((DF_recieved.data[10] & 0xFF) << 16);
-            to_time = to_time + ((DF_recieved.data[9]&0xFF) << 8);
-            to_time = to_time + (DF_recieved.data[8]&0xFF);
-            to_time = to_time - (330*60);
-            to_time = to_time * 1000;
-            if(to_time == 0){
-               Str_to_date = "N/A"; 
-            }else{
-                DateFormat to_date = new SimpleDateFormat("dd-MMM-yyyy  ");
-                Date rtc_to_date_time = new Date(to_time);
-                Str_to_date = to_date.format(rtc_to_date_time);
-                DateFormat df_to_time = new SimpleDateFormat("HH:mm:ss");
-                Str_to_date = Str_to_date + df_to_time.format(rtc_to_date_time);            
-            }
-            EventStatus.setValueAt(total_events, 0, 1);
-            EventStatus.setValueAt(Str_from_date, 1, 1);
-            EventStatus.setValueAt(Str_to_date, 2, 1);
-            
-            GiveResponse("Event details updated", Color.BLUE);
-            retval = true;
-            break;           
+                int total_events = 0;
+                total_events = total_events + (DF_recieved.data[0] & 0xFF);
+                total_events = total_events + ((DF_recieved.data[1] & 0xFF) << 8);
+                total_events = (total_events) + ((DF_recieved.data[2] & 0xFF) << 16);
+                total_events = (total_events) + ((DF_recieved.data[3] & 0xFF) << 24);
+
+                long from_time = 0;
+                String Str_from_date = "";
+                from_time = (DF_recieved.data[7] & 0xFF) << 24;
+                from_time = from_time + ((DF_recieved.data[6] & 0xFF) << 16);
+                from_time = from_time + ((DF_recieved.data[5] & 0xFF) << 8);
+                from_time = from_time + (DF_recieved.data[4] & 0xFF);
+                from_time = from_time - (330 * 60);
+                from_time = from_time * 1000;
+                if (from_time == 0) {
+                    Str_from_date = "N/A";
+                } else {
+                    DateFormat from_date = new SimpleDateFormat("dd-MMM-yyyy  ");
+                    Date rtc_from_date_time = new Date(from_time);
+                    Str_from_date = from_date.format(rtc_from_date_time);
+                    DateFormat df_from_time = new SimpleDateFormat("HH:mm:ss");
+                    Str_from_date = Str_from_date + df_from_time.format(rtc_from_date_time);
+                }
+                long to_time = 0;
+                String Str_to_date = "";
+                to_time = (DF_recieved.data[11] & 0xFF) << 24;
+                to_time = to_time + ((DF_recieved.data[10] & 0xFF) << 16);
+                to_time = to_time + ((DF_recieved.data[9] & 0xFF) << 8);
+                to_time = to_time + (DF_recieved.data[8] & 0xFF);
+                to_time = to_time - (330 * 60);
+                to_time = to_time * 1000;
+                if (to_time == 0) {
+                    Str_to_date = "N/A";
+                } else {
+                    DateFormat to_date = new SimpleDateFormat("dd-MMM-yyyy  ");
+                    Date rtc_to_date_time = new Date(to_time);
+                    Str_to_date = to_date.format(rtc_to_date_time);
+                    DateFormat df_to_time = new SimpleDateFormat("HH:mm:ss");
+                    Str_to_date = Str_to_date + df_to_time.format(rtc_to_date_time);
+                }
+                EventStatus.setValueAt(total_events, 0, 1);
+                EventStatus.setValueAt(Str_from_date, 1, 1);
+                EventStatus.setValueAt(Str_to_date, 2, 1);
+
+                GiveResponse("Event details updated", Color.BLUE);
+                retval = true;
+                break;
         }
         return retval;
     }
-   
-        
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -2143,89 +2150,86 @@ private void prepareChart(){
 
     private void BtnEraseEventsinLoggerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnEraseEventsinLoggerActionPerformed
         String pwd = ErasePwdTxtField.getText();
-        if(pwd.equals("insys123")==false){
-           JOptionPane.showMessageDialog(this.getFrame(), "Please enter correct password to erase all the events in Event Logger", "Password", JOptionPane.ERROR_MESSAGE);
-           return;
-        }        
+        if (pwd.equals("insys123") == false) {
+            JOptionPane.showMessageDialog(this.getFrame(), "Please enter correct password to erase all the events in Event Logger", "Password", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         Thread erase_events = new Thread(new Runnable() {
 
-            public void run()
-            {
+            public void run() {
                 int i = JOptionPane.showConfirmDialog(EventLoggerApp.getApplication().getMainFrame(), "This will Erase events from the Event logger and it is not reversible. \nAre you sure?", "Erase events", JOptionPane.YES_NO_OPTION);
-                if(i==0){
+                if (i == 0) {
                     controlAllButtons(false);
                     DataFrame df = new DataFrame();
                     df.CPU_address = cpu_Addrs;
                     df.CMD = ERASE_EVENTS_EEPROM;
                     df.data = new byte[0];
                     erase_command_sent = true;
-                    SendPacketRecieveResponse(df); 
+                    SendPacketRecieveResponse(df);
                     erase_command_sent = false;
                     controlAllButtons(true);
-                }else{
+                } else {
                     GiveResponse("Aborted by user", Color.RED);
                 }
-                      
+
             }
-            });
-            erase_events.start(); 
-        
+        });
+        erase_events.start();
+
     }//GEN-LAST:event_BtnEraseEventsinLoggerActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-       
+
         Thread set_rtc_time = new Thread(new Runnable() {
 
-        public void run()
-        {
-            controlAllButtons(false);
-            DataFrame df = new DataFrame();
-            df.CPU_address = EventLoggerApp.getApplication().evlogView.cpu_Addrs;
-            df.CMD = SET_RTC_DATE_AND_TIME;
-            df.data = new byte[SET_RTC_DATE_AND_TIME_Length-4];
-            Calendar cal= Calendar.getInstance();
-            cal.getTime().getYear();
-            int yr = cal.getTime().getYear();
-            if(yr>100){
-            yr = 2000 + yr % 100; 
-            }
-            df.data[0] = (byte) (yr & 0xFF);
-            df.data[1] = (byte) ((byte) (yr >> 8) & 0xFF);
-            df.data[2] = (byte) ((byte) (cal.getTime().getMonth()+1) & 0xFF);
-            df.data[3] = (byte) ((byte) (cal.getTime().getDate())  & 0xFF);
-            df.data[4] = (byte) ((byte) (cal.getTime().getHours())  & 0xFF);
-            df.data[5] = (byte) ((byte) (cal.getTime().getMinutes())  & 0xFF);
-            df.data[6] = (byte) ((byte) (cal.getTime().getSeconds())  & 0xFF);
-            SendPacketRecieveResponse(df); 
-            controlAllButtons(true);
+            public void run() {
+                controlAllButtons(false);
+                DataFrame df = new DataFrame();
+                df.CPU_address = EventLoggerApp.getApplication().evlogView.cpu_Addrs;
+                df.CMD = SET_RTC_DATE_AND_TIME;
+                df.data = new byte[SET_RTC_DATE_AND_TIME_Length - 4];
+                Calendar cal = Calendar.getInstance();
+                cal.getTime().getYear();
+                int yr = cal.getTime().getYear();
+                if (yr > 100) {
+                    yr = 2000 + yr % 100;
+                }
+                df.data[0] = (byte) (yr & 0xFF);
+                df.data[1] = (byte) ((byte) (yr >> 8) & 0xFF);
+                df.data[2] = (byte) ((byte) (cal.getTime().getMonth() + 1) & 0xFF);
+                df.data[3] = (byte) ((byte) (cal.getTime().getDate()) & 0xFF);
+                df.data[4] = (byte) ((byte) (cal.getTime().getHours()) & 0xFF);
+                df.data[5] = (byte) ((byte) (cal.getTime().getMinutes()) & 0xFF);
+                df.data[6] = (byte) ((byte) (cal.getTime().getSeconds()) & 0xFF);
+                SendPacketRecieveResponse(df);
+                controlAllButtons(true);
             }
         });
         set_rtc_time.start();
-            
-        
+
+
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         Thread get_rtc_time = new Thread(new Runnable() {
 
-            public void run()
-            {
-                if(DateFiled.getDate() == null){
+            public void run() {
+                if (DateFiled.getDate() == null) {
                     GiveResponse("Please set valid date and time...", Color.RED);
                     return;
                 }
-                controlAllButtons(false);  
+                controlAllButtons(false);
                 DataFrame df = new DataFrame();
                 df.CPU_address = EventLoggerApp.getApplication().evlogView.cpu_Addrs;
                 df.CMD = SET_RTC_DATE_AND_TIME;
-                df.data = new byte[SET_RTC_DATE_AND_TIME_Length-4];
+                df.data = new byte[SET_RTC_DATE_AND_TIME_Length - 4];
                 int yr = DateFiled.getDate().getYear();
-                if(yr>100){
-                    yr = 2000 + yr % 100; 
+                if (yr > 100) {
+                    yr = 2000 + yr % 100;
                 }
                 df.data[0] = (byte) (yr & 0xFF);
                 df.data[1] = (byte) ((byte) (yr >> 8) & 0xFF);
-                df.data[2] = (byte) (DateFiled.getDate().getMonth()+1 & 0xFF);
+                df.data[2] = (byte) (DateFiled.getDate().getMonth() + 1 & 0xFF);
                 df.data[3] = (byte) (DateFiled.getDate().getDate() & 0xFF);
                 df.data[4] = (byte) (Integer.parseInt(HrSpinner.getValue().toString()));
                 df.data[5] = (byte) (Integer.parseInt(MinSpinner.getValue().toString()));
@@ -2235,110 +2239,108 @@ private void prepareChart(){
             }
         });
         get_rtc_time.start();
-        
+
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
-       Thread thread = new Thread(new UpdateRTCTime(this.sfa));
-        thread.start();       
+        Thread thread = new Thread(new UpdateRTCTime(this.sfa));
+        thread.start();
     }//GEN-LAST:event_jButton12ActionPerformed
 
-    public void UpdateRTC(){
+    public void UpdateRTC() {
         controlAllButtons(false);
         DataFrame df = new DataFrame();
         df.CPU_address = cpu_Addrs;
         df.CMD = GET_RTC_DATE_TIME;
-        df.data = new byte[0];        
+        df.data = new byte[0];
         SendPacketRecieveResponse(df);
-        controlAllButtons(true);               
-                     
+        controlAllButtons(true);
+
     }
-    private void ClearAllFields(){
+
+    private void ClearAllFields() {
         networkIDField.setText("");
         dpField.setText("");
         jTextField4.setText("");
     }
     private void BtnGetDACStatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGetDACStatusActionPerformed
-             refreshDACstatus();             
+        refreshDACstatus();
     }//GEN-LAST:event_BtnGetDACStatusActionPerformed
 
-    private void refreshDACstatus(){
-            Thread get_dac_status = new Thread(new Runnable() {
+    private void refreshDACstatus() {
+        Thread get_dac_status = new Thread(new Runnable() {
 
-            public void run()
-            {
+            public void run() {
                 ClearAllFields();
                 DataFrame df = new DataFrame();
                 df.CMD = GET_DAC_STATUS;
                 df.CPU_address = 0x55;
                 df.data = new byte[0];
-                SendPacketRecieveResponse(df);               
+                SendPacketRecieveResponse(df);
             }
-            });
-            get_dac_status.start();   
+        });
+        get_dac_status.start();
     }
     private void BtnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnRefreshActionPerformed
-        RefreshCounts();  
+        RefreshCounts();
     }//GEN-LAST:event_BtnRefreshActionPerformed
 
-    private void RefreshCounts(){
+    private void RefreshCounts() {
         Thread get_event_counts = new Thread(new Runnable() {
 
-            public void run()
-            {
+            public void run() {
                 controlAllButtons(false);
                 EventStatus.setValueAt("Updating...", 0, 1);
                 EventStatus.setValueAt("Updating...", 1, 1);
                 EventStatus.setValueAt("Updating...", 2, 1);
                 DataFrame df = new DataFrame();
-                df.CPU_address =cpu_Addrs;
+                df.CPU_address = cpu_Addrs;
                 df.CMD = GET_EVENT_COUNTS;
                 df.data = new byte[0];
                 SendPacketRecieveResponse(df);
                 controlAllButtons(true);
             }
-            });
-            get_event_counts.start();     
+        });
+        get_event_counts.start();
     }
     private void BtnDownloadEventsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnDownloadEventsActionPerformed
         sharedData.event_downloaded = false;
-        if(jRadioButton2.isSelected() && from_model.getValue()!=null && from_model.getValue().after(to_model.getValue())){
-                JOptionPane.showMessageDialog(this.getFrame(), "'From' date cannot be greater than 'To' date", "Wrong dates", JOptionPane.ERROR_MESSAGE);
-                return;
+        if (jRadioButton2.isSelected() && from_model.getValue() != null && from_model.getValue().after(to_model.getValue())) {
+            JOptionPane.showMessageDialog(this.getFrame(), "'From' date cannot be greater than 'To' date", "Wrong dates", JOptionPane.ERROR_MESSAGE);
+            return;
         }
-        if(jRadioButton2.isSelected() && from_model.getValue()==null){
+        if (jRadioButton2.isSelected() && from_model.getValue() == null) {
             JOptionPane.showMessageDialog(this.getFrame(), "'From' date is required", "Wrong dates", JOptionPane.ERROR_MESSAGE);
-                return;
+            return;
         }
         Thread get_events = new Thread(new Runnable() {
 
-            public void run()
-            {
+            public void run() {
                 cpuselectCmbBx.setSelectedIndex(0);
-                Buttons(false,true);
+                Buttons(false, true);
 //                tabHandle.removeAllRows();
                 model.data.clear();
                 model.fireTableDataChanged();
-                Buttons(false,true);
+                Buttons(false, true);
                 progressBar.setValue(0);
 //                model.removeTableModelListener(jTable1);
-                               
+
                 sharedData.event_list.clear();
-                Buttons(false,true);
+                Buttons(false, true);
                 DataFrame df = new DataFrame();
-                df.CPU_address =cpu_Addrs;
+                df.CPU_address = cpu_Addrs;
                 df.CMD = GET_LOGGED_EVENTS;
                 df.data = new byte[2];
                 df.data[0] = (byte) 255;
                 df.data[1] = 0;
-                SendPacketRecieveResponse(df);   
+                SendPacketRecieveResponse(df);
 //                UpdateEventList("All");
-                jTabbedPane1.setSelectedIndex(4); 
+                jTabbedPane1.setSelectedIndex(4);
 //                Buttons(true,false);
-                }
-                  });
-            get_events.start();     
-        
+            }
+        });
+        get_events.start();
+
     }//GEN-LAST:event_BtnDownloadEventsActionPerformed
 //    private boolean fillColoumns(String[] labelString) {
 //         try{
@@ -2349,58 +2351,62 @@ private void prepareChart(){
 //            return false;
 //            }
 //    }
-    
-    private String getString(int i){
-        if(i==0) return "--";
-        else return Long.toString(i,10);
+
+    private String getString(int i) {
+        if (i == 0) {
+            return "--";
+        } else {
+            return Long.toString(i, 10);
+        }
     }
-    public void UpdateEventList(String cpu){
-        
+
+    public void UpdateEventList(String cpu) {
+
         lblStatus.setText("Updating the table. Please wait...");
         lblStatus.setForeground(Color.BLUE);
         percent = 0;
         model = new MyTableModel();
         jTable1.setModel(model);
-        Buttons(false,false);
+        Buttons(false, false);
         jTable1.setAutoResizeMode(jTable1.AUTO_RESIZE_ALL_COLUMNS);
 //        String[] StringToDisplay = new String[tableColumns.length];
         progressBar.setIndeterminate(false);
         event_list = sharedData.get_logged_events();
-        if(sharedData.event_downloaded && event_list.size()==0){
+        if (sharedData.event_downloaded && event_list.size() == 0) {
             sharedData.event_downloaded = false;
             JOptionPane.showMessageDialog(this.getFrame(), "There are no events logged in the Event Logger", "Events not available", JOptionPane.ERROR_MESSAGE);
             GiveResponse("", Color.RED);
             controlAllButtons(true);
             return;
-        } else if(!sharedData.event_downloaded && cpu.equals("All")==false) {
+        } else if (!sharedData.event_downloaded && cpu.equals("All") == false) {
             JOptionPane.showMessageDialog(this.getFrame(), "Please go to 'Event Download' tab and download the events first", "Events not available", JOptionPane.ERROR_MESSAGE);
             lblStatus.setText("");
             return;
         }
 //        int total_events = event_list.size();
-        for(int col =0; col<tableColumns.length;col++){
+        for (int col = 0; col < tableColumns.length; col++) {
             jTable1.getColumnModel().getColumn(col).setCellRenderer(new HighlightRenderer());
         }
-         TableColumnAdjustment tca = new TableColumnAdjustment( jTable1);
-        tca.setDynamicAdjustment(true);  
+        TableColumnAdjustment tca = new TableColumnAdjustment(jTable1);
+        tca.setDynamicAdjustment(true);
         tca.setColumnHeaderIncluded(false);
         Stop_Updating = false;
         controlAllButtons(false);
-        if(jRadioButton2.isSelected()){
+        if (jRadioButton2.isSelected()) {
             {
-               LinkedList<EventDetails> temp_event_list = new LinkedList<EventDetails>();
-               for(int p=0; p< event_list.size(); p++){
-                   String d = event_list.get(p).date_time;
-                   Date event_date = new Date(d);
-                   long from_time = from_model.getValue().getTime() - (1000* 60 * 60 *12);
-                   long event_time = event_date.getTime();
-                   long to_time = to_model.getValue().getTime() + (1000* 60 * 60 *12);
-                   
-                   if(event_time > from_time && event_time < to_time){
-                       temp_event_list.add(event_list.get(p));
-                   }
-               } 
-               event_list = temp_event_list;
+                LinkedList<EventDetails> temp_event_list = new LinkedList<EventDetails>();
+                for (int p = 0; p < event_list.size(); p++) {
+                    String d = event_list.get(p).date_time;
+                    Date event_date = new Date(d);
+                    long from_time = from_model.getValue().getTime() - (1000 * 60 * 60 * 12);
+                    long event_time = event_date.getTime();
+                    long to_time = to_model.getValue().getTime() + (1000 * 60 * 60 * 12);
+
+                    if (event_time > from_time && event_time < to_time) {
+                        temp_event_list.add(event_list.get(p));
+                    }
+                }
+                event_list = temp_event_list;
             }//
         }
         lblStatus.setForeground(Color.BLUE);
@@ -2408,86 +2414,89 @@ private void prepareChart(){
         worker.execute();
         tca.adjustColumns();
     }
-    
+
     class RowData {
+
         private String[] data;
-        
-        public RowData(String[] d){
+
+        public RowData(String[] d) {
             this.data = d;
         }
-        
-        public String[] getData(){
+
+        public String[] getData() {
             return this.data;
         }
     }
-    
-    
-       public class TableSwingWorker extends SwingWorker<String,RowData> {
 
-           private String cpu;
+    public class TableSwingWorker extends SwingWorker<String, RowData> {
+
+        private String cpu;
+
         public TableSwingWorker(String cpu) {
             this.cpu = cpu;
         }
 
         @Override
         protected String doInBackground() throws Exception {
-            Buttons(false,false);
+            Buttons(false, false);
             int total_events = event_list.size();
             String[] StringToDisplay = new String[tableColumns.length];
-            for(int i =0; i<total_events;i++){
-            EventDetails ed = event_list.get(i);
-            StringToDisplay = new String[tableColumns.length];
-            StringToDisplay[0] = ed.Station_Name;
-            StringToDisplay[1] = unit_type_txt;//ed.DP_Point;
-            if(ed.CPU_Addrs == -1){
-               StringToDisplay[2] = "N/A"; 
-            }
-            else StringToDisplay[2] = "CPU-"+Long.toString(ed.CPU_Addrs,10);
-            StringToDisplay[3] = Long.toString(ed.event_ID);
-            String event_desc = get_event_desc(ed.event_ID);
-            StringToDisplay[4] = event_desc;
-            StringToDisplay[5] = ed.date_time;
-            StringToDisplay[6] = getString(ed.Count1);   
-            if(unit_type!=0){
-            StringToDisplay[7] = getString(ed.Count2); 
-            StringToDisplay[8] = getString(ed.Count3); 
-            if(StringToDisplay.length==10){
-                StringToDisplay[9] = "--";
-            }
-            else{ 
-            StringToDisplay[9] = getString(ed.Count4);             
-            StringToDisplay[10] = "--";
-            }
-            }else{
-            StringToDisplay[7] = "--";
-            }
-            
+            for (int i = 0; i < total_events; i++) {
+                EventDetails ed = event_list.get(i);
+                StringToDisplay = new String[tableColumns.length];
+                StringToDisplay[0] = ed.Station_Name;
+                StringToDisplay[1] = unit_type_txt;//ed.DP_Point;
+                if (ed.CPU_Addrs == -1) {
+                    StringToDisplay[2] = "N/A";
+                } else {
+                    StringToDisplay[2] = "CPU-" + Long.toString(ed.CPU_Addrs, 10);
+                }
+                StringToDisplay[3] = Long.toString(ed.event_ID);
+                String event_desc = get_event_desc(ed.event_ID);
+                StringToDisplay[4] = event_desc;
+                StringToDisplay[5] = ed.date_time;
+                StringToDisplay[6] = getString(ed.Count1);
+                if (unit_type != 0) {
+                    StringToDisplay[7] = getString(ed.Count2);
+                    StringToDisplay[8] = getString(ed.Count3);
+                    if (StringToDisplay.length == 10) {
+                        StringToDisplay[9] = "--";
+                    } else {
+                        StringToDisplay[9] = getString(ed.Count4);
+                        StringToDisplay[10] = "--";
+                    }
+                } else {
+                    StringToDisplay[7] = "--";
+                }
+
 //            System.out.println(Arrays.toString(StringToDisplay));
-            if(cpu.equals("All")){
-                RowData rowdata = new RowData(StringToDisplay);
-                publish(rowdata);
-            }
-//                tabHandle.addRows(StringToDisplay);
-//                new TableSwingWorker(StringToDisplay).execute();
-            else if(cpu.equals(StringToDisplay[2])){
-                RowData rowdata = new RowData(StringToDisplay);
-                publish(rowdata);
-            }
+                if (cpu.equals("All")) {
+                    RowData rowdata = new RowData(StringToDisplay);
+                    publish(rowdata);
+                } //                tabHandle.addRows(StringToDisplay);
+                //                new TableSwingWorker(StringToDisplay).execute();
+                else if (cpu.equals(StringToDisplay[2])) {
+                    RowData rowdata = new RowData(StringToDisplay);
+                    publish(rowdata);
+                }
 //                tabHandle.addRows(StringToDisplay);
 //                new TableSwingWorker(StringToDisplay).execute();         
-            if(i==0) percent =0;
-            else percent = (i*100)/total_events;            
+                if (i == 0) {
+                    percent = 0;
+                } else {
+                    percent = (i * 100) / total_events;
+                }
 //            new AnswerWorker(percent).execute();
-            progressBar.setValue(percent);
+                progressBar.setValue(percent);
 //            Thread.sleep(10);
-            lblStatus.setText("Updating the table: "+ percent + "% complete... Please wait.");
-            lblStatus.setForeground(Color.BLUE);
-            Thread.yield();
-            if(Stop_Updating){
-                break;
+                lblStatus.setText("Updating the table: " + percent + "% complete... Please wait.");
+                lblStatus.setForeground(Color.BLUE);
+                Thread.yield();
+                if (Stop_Updating) {
+                    break;
+                }
             }
-            }
-            Buttons(true,false);
+            Buttons(true, false);
 //            Calculate_MUT_MDT();
             progressBar.setValue(0);
             GiveResponse("Logged events have been populated.", Color.BLUE);
@@ -2499,178 +2508,183 @@ private void prepareChart(){
             model.addRows(row);
         }
     }
-          
-   public void Calculate_MUT_MDT(){       
+
+    public void Calculate_MUT_MDT() {
         total_bad_time = 0;
         total_good_time = 0;
         time_series_up_time.clear();
         time_series_down_time.clear();
         int total_events = event_list.size();
-        String good_time_start= "", good_time_end = "";
+        String good_time_start = "", good_time_end = "";
         String bad_time_start = "", bad_time_end = "";
-        for(int i = total_events-1; i>0;i--){
-            good_time_start= ""; good_time_end = ""; bad_time_start = ""; bad_time_end = "";            
+        for (int i = total_events - 1; i > 0; i--) {
+            good_time_start = "";
+            good_time_end = "";
+            bad_time_start = "";
+            bad_time_end = "";
             EventDetails ed = event_list.get(i);
-            if(ed.event_ID == 9){         //add good cases here
-                good_time_start = ed.date_time;            
-                while(i>0){
+            if (ed.event_ID == 9) {         //add good cases here
+                good_time_start = ed.date_time;
+                while (i > 0) {
                     i--;
                     ed = event_list.get(i);
-                    if(ed.event_ID == 79        //add bad events here
-                    || ed.event_ID == 77
-                    || ed.event_ID == 2
-                    || ed.event_ID == 69
-                    || ed.event_ID == 39
-                    || ed.event_ID == 41
-                    || ed.event_ID == 33
-                    || ed.event_ID == 55
-                    || ed.event_ID == 43
-                    || ed.event_ID == 45
-                    || ed.event_ID == 51
-                    || ed.event_ID == 53
-                    || ed.event_ID == 81
-                    || ed.event_ID == 83
-                    || ed.event_ID == 71
-                    || ed.event_ID == 96
-                    || ed.event_ID == 97
-                    || ed.event_ID == 98
-                    || ed.event_ID == 99
-                    || ed.event_ID == 100
-                    || ed.event_ID == 101
-                    || ed.event_ID == 102
-                    || ed.event_ID == 103
-                    || ed.event_ID == 104
-                    || ed.event_ID == 105
-                    || ed.event_ID == 106
-                    ){
-                    good_time_end = ed.date_time;
-                    calculate_total_good_time(good_time_start,good_time_end);
-                    break;
+                    if (ed.event_ID == 79 //add bad events here
+                            || ed.event_ID == 77
+                            || ed.event_ID == 2
+                            || ed.event_ID == 69
+                            || ed.event_ID == 39
+                            || ed.event_ID == 41
+                            || ed.event_ID == 33
+                            || ed.event_ID == 55
+                            || ed.event_ID == 43
+                            || ed.event_ID == 45
+                            || ed.event_ID == 51
+                            || ed.event_ID == 53
+                            || ed.event_ID == 81
+                            || ed.event_ID == 83
+                            || ed.event_ID == 71
+                            || ed.event_ID == 96
+                            || ed.event_ID == 97
+                            || ed.event_ID == 98
+                            || ed.event_ID == 99
+                            || ed.event_ID == 100
+                            || ed.event_ID == 101
+                            || ed.event_ID == 102
+                            || ed.event_ID == 103
+                            || ed.event_ID == 104
+                            || ed.event_ID == 105
+                            || ed.event_ID == 106) {
+                        good_time_end = ed.date_time;
+                        calculate_total_good_time(good_time_start, good_time_end);
+                        break;
                     }
                 }
-            }
-            
-        else{
-            switch(ed.event_ID)  {  
-            
-            case 79:        //add bad events here
-            case 77:
-            case 71:            
-            case 2:
-            case 69:
-            case 39:
-            case 41:
-            case 83:
-            case 81:
-            case 33:
-            case 55:
-            case 53:
-            case 51:
-            case 43:
-            case 45:
-            case 96:
-            case 97:
-            case 98:
-            case 99:
-            case 100:
-            case 101:
-            case 102:
-            case 103:
-            case 104:
-            case 105:
-            case 106:
-            case 107:
-              bad_time_start = ed.date_time;            
-                while(i>0){
-                    i--;
-                ed = event_list.get(i);
-                if(ed.event_ID == 9){       //add good events here
-                    bad_time_end = ed.date_time;
-                    calculate_total_bad_time(bad_time_start,bad_time_end);
-                    break;
+            } else {
+                switch (ed.event_ID) {
+
+                    case 79:        //add bad events here
+                    case 77:
+                    case 71:
+                    case 2:
+                    case 69:
+                    case 39:
+                    case 41:
+                    case 83:
+                    case 81:
+                    case 33:
+                    case 55:
+                    case 53:
+                    case 51:
+                    case 43:
+                    case 45:
+                    case 96:
+                    case 97:
+                    case 98:
+                    case 99:
+                    case 100:
+                    case 101:
+                    case 102:
+                    case 103:
+                    case 104:
+                    case 105:
+                    case 106:
+                    case 107:
+                        bad_time_start = ed.date_time;
+                        while (i > 0) {
+                            i--;
+                            ed = event_list.get(i);
+                            if (ed.event_ID == 9) {       //add good events here
+                                bad_time_end = ed.date_time;
+                                calculate_total_bad_time(bad_time_start, bad_time_end);
+                                break;
+                            }
+                        }
+                        break;
                 }
-                }
-                break;
             }
         }
-        }
-        
+
         long up_time = total_good_time;
         String up_duration = sharedData.getDuration(up_time);
-        jLabel21.setText(up_duration);   
+        jLabel21.setText(up_duration);
         long down_time = total_bad_time;
         String down_duration = sharedData.getDuration(down_time);
         jLabel23.setText(down_duration);
         System.out.println("good time: " + total_good_time);
         System.out.println("bad time: " + total_bad_time);
         float SA = 0;
-        if(total_bad_time + total_good_time == 0){
+        if (total_bad_time + total_good_time == 0) {
             jLabel25.setText("NA");
-        }
-        else {
-            SA = (float)total_good_time/((float)total_bad_time+(float)total_good_time);
+        } else {
+            SA = (float) total_good_time / ((float) total_bad_time + (float) total_good_time);
             SA = SA * 100;
-            if(Float.toString(SA).length()<5){
-                jLabel25.setText(Float.toString(SA)+"%");
+            if (Float.toString(SA).length() < 5) {
+                jLabel25.setText(Float.toString(SA) + "%");
+            } else {
+                jLabel25.setText(Float.toString(SA).substring(0, 5) + "%");
             }
-            else jLabel25.setText(Float.toString(SA).substring(0, 5)+"%");
         }
-        
-   }
-   private void calculate_total_good_time(String start, String end){
-       if(start.equals("") || end.equals("")) return;
-    SimpleDateFormat format = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
-    Date d1 = null;
-    Date d2 = null;
-    try {
-        d1 = format.parse(start);
-        d2 = format.parse(end);
-    } catch (ParseException e) {
-        e.printStackTrace();
+
     }
-    long diff_in_secs = d2.getTime()/1000 - d1.getTime()/1000;
-    total_good_time = total_good_time + diff_in_secs;    
-    long diff_in_hours = total_good_time /3600;
-    Day p = new Day(d2);
-    time_series_up_time.addOrUpdate(p,diff_in_hours);
-    System.out.println(p);
-   }
-   
-    private void calculate_total_bad_time(String start, String end){
-        if(start.equals("") || end.equals("")) return;
-    SimpleDateFormat format = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
-    Date d1 = null;
-    Date d2 = null;
-    try {
-        d1 = format.parse(start);
-        d2 = format.parse(end);
-    } catch (ParseException e) {
-        e.printStackTrace();
+
+    private void calculate_total_good_time(String start, String end) {
+        if (start.equals("") || end.equals("")) {
+            return;
+        }
+        SimpleDateFormat format = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
+        Date d1 = null;
+        Date d2 = null;
+        try {
+            d1 = format.parse(start);
+            d2 = format.parse(end);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        long diff_in_secs = d2.getTime() / 1000 - d1.getTime() / 1000;
+        total_good_time = total_good_time + diff_in_secs;
+        long diff_in_hours = total_good_time / 3600;
+        Day p = new Day(d2);
+        time_series_up_time.addOrUpdate(p, diff_in_hours);
+        System.out.println(p);
     }
-    // Get msec from each, and subtract.
-    total_bad_time = total_bad_time + d2.getTime()/1000 - d1.getTime()/1000;
-    long diff_in_hours = total_bad_time /3600;
-    Day p = new Day(d2);
-    time_series_down_time.addOrUpdate(p,diff_in_hours);
-   }
-   
+
+    private void calculate_total_bad_time(String start, String end) {
+        if (start.equals("") || end.equals("")) {
+            return;
+        }
+        SimpleDateFormat format = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
+        Date d1 = null;
+        Date d2 = null;
+        try {
+            d1 = format.parse(start);
+            d2 = format.parse(end);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        // Get msec from each, and subtract.
+        total_bad_time = total_bad_time + d2.getTime() / 1000 - d1.getTime() / 1000;
+        long diff_in_hours = total_bad_time / 3600;
+        Day p = new Day(d2);
+        time_series_down_time.addOrUpdate(p, diff_in_hours);
+    }
+
     public void resizeColumnWidth(JTable table) {
-    final TableColumnModel columnModel = table.getColumnModel();
-    for (int column = 0; column < table.getColumnCount(); column++) {
-        int width = 50; // Min width
-        for (int row = 0; row < table.getRowCount(); row++) {
-            TableCellRenderer renderer = table.getCellRenderer(row, column);
-            Component comp = table.prepareRenderer(renderer, row, column);
-            width = Math.max(comp.getPreferredSize().width, width);
+        final TableColumnModel columnModel = table.getColumnModel();
+        for (int column = 0; column < table.getColumnCount(); column++) {
+            int width = 50; // Min width
+            for (int row = 0; row < table.getRowCount(); row++) {
+                TableCellRenderer renderer = table.getCellRenderer(row, column);
+                Component comp = table.prepareRenderer(renderer, row, column);
+                width = Math.max(comp.getPreferredSize().width, width);
+            }
+            columnModel.getColumn(column).setPreferredWidth(width);
         }
-        columnModel.getColumn(column).setPreferredWidth(width);
     }
-}
-    
-    private String get_event_desc(int event_ID){
+
+    private String get_event_desc(int event_ID) {
         String retval = "";
-        for(EventDescription ed : EventDescription.values()){
-            if(event_ID == ed.getOrdinal()){
+        for (EventDescription ed : EventDescription.values()) {
+            if (event_ID == ed.getOrdinal()) {
                 retval = ed.toString();
                 retval = retval.substring(6);
                 retval = retval.replace("_", " ");
@@ -2683,15 +2697,14 @@ private void prepareChart(){
         }
         return retval;
     }
-    
-    private String getCapCorrected(String t){
+
+    private String getCapCorrected(String t) {
         String retval = "";
         String[] p = t.split(" ");
-        for(int i=0;i<p.length;i++){
-            if(p[i].length()<2){
-                
-            }
-            else if(p[i].length() > 3){
+        for (int i = 0; i < p.length; i++) {
+            if (p[i].length() < 2) {
+
+            } else if (p[i].length() > 3) {
                 p[i] = p[i].substring(0, 1).concat(p[i].substring(1, p[i].length()).toLowerCase());
             }
             retval = retval.concat(" ").concat(p[i]);
@@ -2699,53 +2712,49 @@ private void prepareChart(){
         return retval;
     }
     private void BtnConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnConnectActionPerformed
-        if(BtnConnect.getText().contains("Disconnect")){
+        if (BtnConnect.getText().contains("Disconnect")) {
             System.exit(0);
         }
-        if(sharedData.connected){
+        if (sharedData.connected) {
             Thread con_thread = new Thread(new Runnable() {
-            public void run()
-            {
-                controlAllButtons(false);
-                sh.disconnect();
-                sharedData.connected = false;
-                BtnConnect.setText("Connect"); 
-                controlAllButtons(true);
-            }
+                public void run() {
+                    controlAllButtons(false);
+                    sh.disconnect();
+                    sharedData.connected = false;
+                    BtnConnect.setText("Connect");
+                    controlAllButtons(true);
+                }
             });
-            con_thread.start();  
-           
-        }
-        else{
+            con_thread.start();
+
+        } else {
             //serial_helper = new SerialHelper();
             Thread con_thread = new Thread(new Runnable() {
 
-            public void run()
-            {
-                if(com_connect()){
-                   BtnConnect.setText("Disconnect");
-                   jTabbedPane1.setSelectedIndex(1); 
-                   UpdateStatusPanel();
+                public void run() {
+                    if (com_connect()) {
+                        BtnConnect.setText("Disconnect");
+                        jTabbedPane1.setSelectedIndex(1);
+                        UpdateStatusPanel();
+                    }
+
                 }
-                
-            }
             });
-            con_thread.start();  
-        }   
+            con_thread.start();
+        }
     }//GEN-LAST:event_BtnConnectActionPerformed
 
-    
 
     private void usbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usbActionPerformed
         port = "USB";
     }//GEN-LAST:event_usbActionPerformed
 
     private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
-        try{
+        try {
             jTable1.print();
-        }catch(PrinterException ex){
+        } catch (PrinterException ex) {
             JOptionPane.showMessageDialog(this.getFrame(), ex.getMessage(), "Print Error", JOptionPane.ERROR_MESSAGE);
-        }               
+        }
     }//GEN-LAST:event_jButton8ActionPerformed
 
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
@@ -2758,10 +2767,9 @@ private void prepareChart(){
         ab.setVisible(true);
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
-    class ChartWorker extends SwingWorker<Integer, Integer>
-    {
-        protected Integer doInBackground() throws Exception
-        {
+    class ChartWorker extends SwingWorker<Integer, Integer> {
+
+        protected Integer doInBackground() throws Exception {
             // Do a time-consuming task.
             GiveResponse("Updating chart. Please wait...", Color.BLUE);
             Thread.sleep(1000);
@@ -2769,133 +2777,131 @@ private void prepareChart(){
             return 42;
         }
 
-        protected void done()
-        {
-            try
-            {
+        protected void done() {
+            try {
                 GiveResponse("Chart refreshed.", Color.BLUE);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
     private void stnNameTxtFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_stnNameTxtFieldKeyReleased
-         if(stnNameTxtField.getText().equals("")){
+        if (stnNameTxtField.getText().equals("")) {
             EnterStnNameHint.setVisible(true);
-        }else{
+        } else {
             EnterStnNameHint.setVisible(false);
         }
     }//GEN-LAST:event_stnNameTxtFieldKeyReleased
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        
+
         JFileChooser fileDialog = new JFileChooser();
         fileDialog.setDialogType(JFileChooser.SAVE_DIALOG);
-        ExtensionFileFilter filter1 =  new ExtensionFileFilter("MS Access (.mdb File)", new String[] {"mdb"});
-        fileDialog.setFileFilter (filter1);
+        ExtensionFileFilter filter1 = new ExtensionFileFilter("MS Access (.mdb File)", new String[]{"mdb"});
+        fileDialog.setFileFilter(filter1);
         fileDialog.setSelectedFile(new File(sharedData.getDate()));
         fileDialog.setFileSelectionMode(JFileChooser.FILES_ONLY);
         int status = fileDialog.showSaveDialog(null);
 
         fileDialog.setVisible(true);
-        if(status == fileDialog.CANCEL_OPTION)
+        if (status == fileDialog.CANCEL_OPTION) {
             return;
-        String directory= fileDialog.getSelectedFile().getParent();
-
-        String fileName=fileDialog.getSelectedFile().getName();
-
-        if(directory!=null){
-
-        directory=directory.replace(File.separatorChar, '\\');
-
-        fileName=fileName.replace(File.separatorChar, '\\');
-
-        fullPath = directory + "\\"+fileName;
-        controlAllButtons(false);
-        GiveResponse("Exporting to Microsoft Access file...", Color.BLACK);
-        if(!fullPath.toLowerCase().contains(".mdb")){
-            fullPath=fullPath.concat(".mdb");
         }
-        fullPath = fullPath.replace("\\", "/");
-        Thread te = new Thread(new Runnable() {
+        String directory = fileDialog.getSelectedFile().getParent();
 
-            public void run()
-            {
-                controlAllButtons(false);
-                GiveResponse("Exporting to MS Access takes few minutes. Please wait...", Color.BLUE);
-                if(ExportAccess(fullPath)==false){
-            JOptionPane.showMessageDialog(EventLoggerApp.getApplication().getView().getFrame(), "Failed to create Microsoft Access file.","Error",  JOptionPane.ERROR_MESSAGE);
+        String fileName = fileDialog.getSelectedFile().getName();
+
+        if (directory != null) {
+
+            directory = directory.replace(File.separatorChar, '\\');
+
+            fileName = fileName.replace(File.separatorChar, '\\');
+
+            fullPath = directory + "\\" + fileName;
+            controlAllButtons(false);
+            GiveResponse("Exporting to Microsoft Access file...", Color.BLACK);
+            if (!fullPath.toLowerCase().contains(".mdb")) {
+                fullPath = fullPath.concat(".mdb");
             }
-            else {
-                fullPath = fullPath.replace("\\", "/");
-                fullPath = fullPath.replace("//", "/");
-                if(!fullPath.endsWith(".mdb")) fullPath = fullPath.concat(".mdb");
-                GiveResponse("Microsoft Access file successfully created at "+ fullPath, Color.BLUE);
-            }
-         controlAllButtons(true);
-            }
+            fullPath = fullPath.replace("\\", "/");
+            Thread te = new Thread(new Runnable() {
+
+                public void run() {
+                    controlAllButtons(false);
+                    GiveResponse("Exporting to MS Access takes few minutes. Please wait...", Color.BLUE);
+                    if (ExportAccess(fullPath) == false) {
+                        JOptionPane.showMessageDialog(EventLoggerApp.getApplication().getView().getFrame(), "Failed to create Microsoft Access file.", "Error", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        fullPath = fullPath.replace("\\", "/");
+                        fullPath = fullPath.replace("//", "/");
+                        if (!fullPath.endsWith(".mdb")) {
+                            fullPath = fullPath.concat(".mdb");
+                        }
+                        GiveResponse("Microsoft Access file successfully created at " + fullPath, Color.BLUE);
+                    }
+                    controlAllButtons(true);
+                }
             });
             te.start();
-        
+
         }
-        
+
     }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
         JFileChooser fileDialog = new JFileChooser();
         fileDialog.setDialogType(JFileChooser.SAVE_DIALOG);
-        ExtensionFileFilter filter1 =  new ExtensionFileFilter("PDF (.pdf File)", new String[] {"pdf"});
-        fileDialog.setFileFilter (filter1);
+        ExtensionFileFilter filter1 = new ExtensionFileFilter("PDF (.pdf File)", new String[]{"pdf"});
+        fileDialog.setFileFilter(filter1);
         fileDialog.setSelectedFile(new File(sharedData.getDate()));
         fileDialog.setFileSelectionMode(JFileChooser.FILES_ONLY);
         int status = fileDialog.showSaveDialog(null);
 
         fileDialog.setVisible(true);
-        if(status == fileDialog.CANCEL_OPTION)
+        if (status == fileDialog.CANCEL_OPTION) {
             return;
-        String directory= fileDialog.getSelectedFile().getParent();
-
-        String fileName=fileDialog.getSelectedFile().getName();
-
-        if(directory!=null){
-
-        directory=directory.replace(File.separatorChar, '\\');
-
-        fileName=fileName.replace(File.separatorChar, '\\');
-
-        fullPath = directory + "\\"+fileName;
-        
-        GiveResponse("Exporting to PDF file...", Color.BLACK);
-        if(!fullPath.toLowerCase().contains(".pdf")){
-            fullPath=fullPath.concat(".pdf");
         }
-        
-        fullPath = fullPath.replace("\\", "/");
-        Thread get_dac_status = new Thread(new Runnable() {
+        String directory = fileDialog.getSelectedFile().getParent();
 
-            public void run()
-            {
-                controlAllButtons(false);
-                GiveResponse("Please wait...", Color.BLUE);
-               
-                 if(putToPDF(fullPath)==false){
-            JOptionPane.showMessageDialog(EventLoggerApp.getApplication().getView().getFrame(), "Failed to create PDF file.\nPlease close the currently opened PDF file.","Error",  JOptionPane.ERROR_MESSAGE);
+        String fileName = fileDialog.getSelectedFile().getName();
+
+        if (directory != null) {
+
+            directory = directory.replace(File.separatorChar, '\\');
+
+            fileName = fileName.replace(File.separatorChar, '\\');
+
+            fullPath = directory + "\\" + fileName;
+
+            GiveResponse("Exporting to PDF file...", Color.BLACK);
+            if (!fullPath.toLowerCase().contains(".pdf")) {
+                fullPath = fullPath.concat(".pdf");
             }
-            else {
-                fullPath = fullPath.replace("\\", "/");
-                fullPath = fullPath.replace("//", "/");
-                if(!fullPath.endsWith(".pdf")) fullPath = fullPath.concat(".pdf");
-                GiveResponse("PDF file successfully created at "+ fullPath, Color.BLUE);
-            }
-         controlAllButtons(true);            
-            }
+
+            fullPath = fullPath.replace("\\", "/");
+            Thread get_dac_status = new Thread(new Runnable() {
+
+                public void run() {
+                    controlAllButtons(false);
+                    GiveResponse("Please wait...", Color.BLUE);
+
+                    if (putToPDF(fullPath) == false) {
+                        JOptionPane.showMessageDialog(EventLoggerApp.getApplication().getView().getFrame(), "Failed to create PDF file.\nPlease close the currently opened PDF file.", "Error", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        fullPath = fullPath.replace("\\", "/");
+                        fullPath = fullPath.replace("//", "/");
+                        if (!fullPath.endsWith(".pdf")) {
+                            fullPath = fullPath.concat(".pdf");
+                        }
+                        GiveResponse("PDF file successfully created at " + fullPath, Color.BLUE);
+                    }
+                    controlAllButtons(true);
+                }
             });
-            get_dac_status.start(); 
-        
+            get_dac_status.start();
+
         }
-        
+
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
@@ -2903,59 +2909,61 @@ private void prepareChart(){
     }//GEN-LAST:event_jButton4ActionPerformed
 
 private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
-    String readme= null;    
+    String readme = null;
     try {
-            readme = new File(EventLoggerView.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile().getPath();
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    
+        readme = new File(EventLoggerView.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile().getPath();
+    } catch (URISyntaxException ex) {
+        Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
+    }
+
     if (Desktop.isDesktopSupported()) {
-    try {
-        if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
-            File file = new File(readme+"/Readme.txt");
-            if(!file.isFile()){
-                JOptionPane.showMessageDialog(EventLoggerApp.getApplication().getView().getFrame(), "Failed to open the readme file.","Error",  JOptionPane.ERROR_MESSAGE);
+        try {
+            if (Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) {
+                File file = new File(readme + "/Readme.txt");
+                if (!file.isFile()) {
+                    JOptionPane.showMessageDialog(EventLoggerApp.getApplication().getView().getFrame(), "Failed to open the readme file.", "Error", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    Desktop.getDesktop().edit(file);
+                }
             }
-            else Desktop.getDesktop().edit(file);
-        }
 //        // or...
 //        if (Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
 //            Desktop.getDesktop().open(new File(readme+"/Readme.txt"));
 //        }
-    } catch (IOException exp) {
-        exp.printStackTrace();
+        } catch (IOException exp) {
+            exp.printStackTrace();
+        }
     }
-}
 
 }//GEN-LAST:event_jMenuItem2ActionPerformed
 
 private void cpuselectCmbBxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cpuselectCmbBxActionPerformed
     final String cpu = (String) cpuselectCmbBx.getSelectedItem();
-    if(sharedData.event_downloaded == false) return;
+    if (sharedData.event_downloaded == false) {
+        return;
+    }
     Thread te = new Thread(new Runnable() {
 
-    public void run()
-    {
-        Buttons(false,false);
-        model.data.clear();
-        model.fireTableDataChanged();
-        UpdateEventList(cpu);
-        Buttons(true,false);
-    }
+        public void run() {
+            Buttons(false, false);
+            model.data.clear();
+            model.fireTableDataChanged();
+            UpdateEventList(cpu);
+            Buttons(true, false);
+        }
     });
     te.start();
-    
+
 }//GEN-LAST:event_cpuselectCmbBxActionPerformed
 
 private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton1ActionPerformed
-        jPanel18.setEnabled(!jRadioButton1.isSelected());
-        jPanel19.setEnabled(!jRadioButton1.isSelected());
+    jPanel18.setEnabled(!jRadioButton1.isSelected());
+    jPanel19.setEnabled(!jRadioButton1.isSelected());
 }//GEN-LAST:event_jRadioButton1ActionPerformed
 
 private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton2ActionPerformed
-        jPanel18.setEnabled(jRadioButton2.isSelected());
-        jPanel19.setEnabled(jRadioButton2.isSelected());
+    jPanel18.setEnabled(jRadioButton2.isSelected());
+    jPanel19.setEnabled(jRadioButton2.isSelected());
 }//GEN-LAST:event_jRadioButton2ActionPerformed
 
 private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
@@ -2964,47 +2972,45 @@ private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     cs.setVisible(true);
 }//GEN-LAST:event_jMenuItem3ActionPerformed
 
-    public boolean ExportPDF(String path){
-        
-        
+    public boolean ExportPDF(String path) {
+
         boolean retval = false;
         try {
-        PDDocument document = new PDDocument();
-        PDPage page = new PDPage();
-        document.addPage(page); 
+            PDDocument document = new PDDocument();
+            PDPage page = new PDPage();
+            document.addPage(page);
 
-        // Image to use 
-        
-        InputStream is = getClass().getResourceAsStream("resources/insys_logo_w200.jpg");
-        
-        PDXObjectImage img = new PDJpeg(document, is);
+            // Image to use 
+            InputStream is = getClass().getResourceAsStream("resources/insys_logo_w200.jpg");
 
-        // Create a new font object selecting one of the PDF base fonts
-        PDFont font = PDType1Font.HELVETICA_BOLD;
+            PDXObjectImage img = new PDJpeg(document, is);
 
-        // Start a new content stream which will "hold" the content to be created
-        PDPageContentStream contentStream = new PDPageContentStream(document, page,true,true);
+            // Create a new font object selecting one of the PDF base fonts
+            PDFont font = PDType1Font.HELVETICA_BOLD;
 
-        contentStream.setFont( font, 6 );
-        contentStream.drawImage(img, 200, 179);
+            // Start a new content stream which will "hold" the content to be created
+            PDPageContentStream contentStream = new PDPageContentStream(document, page, true, true);
 
-        drawTable( page,  contentStream );
+            contentStream.setFont(font, 6);
+            contentStream.drawImage(img, 200, 179);
 
-        // Make sure that the content stream is closed
-        contentStream.close();
+            drawTable(page, contentStream);
 
-        // Save the results and ensure that the document is properly closed
-        document.save(path);
-        document.close();
-        retval = true;
+            // Make sure that the content stream is closed
+            contentStream.close();
+
+            // Save the results and ensure that the document is properly closed
+            document.save(path);
+            document.close();
+            retval = true;
         } catch (Exception e) {
             retval = false;
-        System.out.println("Exception is: ");
+            System.out.println("Exception is: ");
         }
         return retval;
 
     }
-    
+
 //    private boolean exportPDF1(String path){
 //        Document document = new Document(PageSize.A4.rotate()) {};
 //        PdfWriter writer = null;
@@ -3034,8 +3040,7 @@ private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 //        return true;   
 //
 //    }
-    
-       private void drawTable( PDPage page, PDPageContentStream contentStream) {
+    private void drawTable(PDPage page, PDPageContentStream contentStream) {
         try {
             float y = 650;
             float margin = 130;
@@ -3044,82 +3049,84 @@ private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             final int rows = jTable1.getRowCount();
             final int cols = 10;
             final float rowHeight = 22f;
-            final float tableWidth =  900.0f;
+            final float tableWidth = 900.0f;
             final float tableHeight = rowHeight * rows;
-            final float cellMargin=1f;
+            final float cellMargin = 1f;
 
-            for(int c =0; c<column_headers.length;c++){
+            for (int c = 0; c < column_headers.length; c++) {
                 column_headers[c] = jTable1.getColumnName(c);
             }
             //draw the rows
-            float nexty = y ;
-            for (int i = 0; i <= rows; i++)
-            {
+            float nexty = y;
+            for (int i = 0; i <= rows; i++) {
                 contentStream.drawLine(margin, nexty, 400, nexty);
-                nexty-= rowHeight;
+                nexty -= rowHeight;
             }
 
-            float colWidthX [] = {100,100,100,100,100,100,100,100,100,100,100};
+            float colWidthX[] = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
 
             //draw the columns
             float nextx = margin;
-            for (int i = 0; i <= cols; i++)
-            {
-                contentStream.drawLine(nextx, y, nextx, y-tableHeight);
-                nextx += colWidthX[i] ; //colWidth;
+            for (int i = 0; i <= cols; i++) {
+                contentStream.drawLine(nextx, y, nextx, y - tableHeight);
+                nextx += colWidthX[i]; //colWidth;
             }
 
             //now add the text
-            float textx = margin+cellMargin;
-            float texty = y-15;
+            float textx = margin + cellMargin;
+            float texty = y - 15;
             //textx = margin+cellMargin;
 
+            for (int j = 0; j < 7; j++) {
+                contentStream.beginText();
+                contentStream.moveTextPositionByAmount(textx, texty);
 
-                for(int j = 0 ; j < 7; j++) {
-                    contentStream.beginText();
-                    contentStream.moveTextPositionByAmount(textx,texty);
-
-                    contentStream.drawString(column_headers[j]);
-                    contentStream.endText();
-                    textx += colWidthX[0]+9;
-                    contentStream.beginText();
-                    contentStream.moveTextPositionByAmount(textx,texty);
-                    if(j==0)
-                        contentStream.drawString( "1" );
-                    if(j==1)
-                        contentStream.drawString( "12345" );
-                    if(j==2)
-                        contentStream.drawString( "05-December-2003" );
-                    if(j==3)
-                        contentStream.drawString( "15" );
-                    if(j==4)
-                        contentStream.drawString( "1" );
-                    if(j==5)
-                        contentStream.drawString( "1" );
-                    if(j==6)
-                        contentStream.drawString( "1" );
-                    if(j==7)
-                        contentStream.drawString( "1" );
-                    if(j==8)
-                        contentStream.drawString( "1" );
-
-                    contentStream.endText();
-                    textx = margin+cellMargin; //colWidth;
-                    texty -= rowHeight; //row height
-
+                contentStream.drawString(column_headers[j]);
+                contentStream.endText();
+                textx += colWidthX[0] + 9;
+                contentStream.beginText();
+                contentStream.moveTextPositionByAmount(textx, texty);
+                if (j == 0) {
+                    contentStream.drawString("1");
                 }
-                texty-=rowHeight;
-                textx = margin+cellMargin;
-        }
-        catch ( IOException ioe )
-        {
+                if (j == 1) {
+                    contentStream.drawString("12345");
+                }
+                if (j == 2) {
+                    contentStream.drawString("05-December-2003");
+                }
+                if (j == 3) {
+                    contentStream.drawString("15");
+                }
+                if (j == 4) {
+                    contentStream.drawString("1");
+                }
+                if (j == 5) {
+                    contentStream.drawString("1");
+                }
+                if (j == 6) {
+                    contentStream.drawString("1");
+                }
+                if (j == 7) {
+                    contentStream.drawString("1");
+                }
+                if (j == 8) {
+                    contentStream.drawString("1");
+                }
+
+                contentStream.endText();
+                textx = margin + cellMargin; //colWidth;
+                texty -= rowHeight; //row height
+
+            }
+            texty -= rowHeight;
+            textx = margin + cellMargin;
+        } catch (IOException ioe) {
             //Package.log.error( " drawTable :" + ioe);
             final String errormsg = "Could not drawTable ";
             //Package.log.error("In RuleThread drawTable " + errormsg, ioe);
             throw new RuntimeException(errormsg, ioe);
-        }
-        catch ( Exception ex )
-        {
+        } catch (Exception ex) {
             //Package.log.error( " drawTable :" + ex);
             final String errormsg = "Could not drawTable ";
             //Package.log.error("In RuleThread drawTable " + errormsg, ex);
@@ -3127,25 +3134,25 @@ private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
     }
 
-   public boolean putToPDF(String path){
-       boolean retval = false;
+    public boolean putToPDF(String path) {
+        boolean retval = false;
         try {
-        
-        Document doc = new Document();
-        doc.setMargins(-32, -32, 88, 64);
-        PdfWriter pdfwriter = PdfWriter.getInstance(doc, new FileOutputStream(path));       
 
-        HeaderTable headerevent = new HeaderTable();
-        pdfwriter.setPageEvent(headerevent);
-        
-        FooterTable footerevent = new FooterTable();
-        pdfwriter.setPageEvent(footerevent);
-        
+            Document doc = new Document();
+            doc.setMargins(-32, -32, 88, 64);
+            PdfWriter pdfwriter = PdfWriter.getInstance(doc, new FileOutputStream(path));
+
+            HeaderTable headerevent = new HeaderTable();
+            pdfwriter.setPageEvent(headerevent);
+
+            FooterTable footerevent = new FooterTable();
+            pdfwriter.setPageEvent(footerevent);
+
             doc.open();
             PdfPTable pdfTable = new PdfPTable(jTable1.getColumnCount());
 //            pdfTable.setTotalWidth(550);
             int[] t = new int[jTable1.getColumnCount()];
-            for(int h=0;h<t.length;h++){
+            for (int h = 0; h < t.length; h++) {
                 t[h] = 35;
             }
 //            t[1] = 30;
@@ -3154,7 +3161,7 @@ private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             pdfTable.setWidths(t);
             //adding table headers
             Font headerfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.BLUE);
-            Font rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.BLACK);            
+            Font rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.BLACK);
             Paragraph col = null;
             for (int i = 0; i < jTable1.getColumnCount(); i++) {
                 col = new Paragraph(jTable1.getColumnName(i), headerfont);
@@ -3168,43 +3175,43 @@ private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             String value = "";
             for (int rows = 0; rows < jTable1.getRowCount() - 1; rows++) {
                 for (int cols = 0; cols < jTable1.getColumnCount(); cols++) {
-                    if(jTable1.getModel().getValueAt(rows, cols) != null)
-                    value = jTable1.getModel().getValueAt(rows, cols).toString();
-                    else value = "";
-                    if(value.toString().contains("Failure")
-                     ||value.toString().contains("Defective")
-                     ||value.toString().contains("Failed")
-                     ||value.toString().contains("Mismatch")
-                     ||value.toString().contains("Direct")
-                     ||value.toString().contains("Pulsating")
-                     ||value.toString().contains("NOT Detecting")
-                     ||value.toString().contains("Influence")
-                     ||value.toString().contains("Theft")
-                     ||value.toString().contains("Door Open")
-                     ||value.toString().contains("BAD")){                       
-                         rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.RED);           
-                    }else if(value.toString().contains("Clear")
-                        || value.toString().contains("Restored")
-                    ){
-                        Color clear_color = new Color(0,128,0);
-                        rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, clear_color);           
-                    }else if(value.toString().contains("Missing")){
-                        rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.PINK); 
-                    }else if(value.toString().contains("Normal")){
+                    if (jTable1.getModel().getValueAt(rows, cols) != null) {
+                        value = jTable1.getModel().getValueAt(rows, cols).toString();
+                    } else {
+                        value = "";
+                    }
+                    if (value.toString().contains("Failure")
+                            || value.toString().contains("Defective")
+                            || value.toString().contains("Failed")
+                            || value.toString().contains("Mismatch")
+                            || value.toString().contains("Direct")
+                            || value.toString().contains("Pulsating")
+                            || value.toString().contains("NOT Detecting")
+                            || value.toString().contains("Influence")
+                            || value.toString().contains("Theft")
+                            || value.toString().contains("Door Open")
+                            || value.toString().contains("BAD")) {
+                        rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.RED);
+                    } else if (value.toString().contains("Clear")
+                            || value.toString().contains("Restored")) {
+                        Color clear_color = new Color(0, 128, 0);
+                        rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, clear_color);
+                    } else if (value.toString().contains("Missing")) {
+                        rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.PINK);
+                    } else if (value.toString().contains("Normal")) {
                         rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.BLUE);
-                    }else if(value.toString().contains("Occupied")){
+                    } else if (value.toString().contains("Occupied")) {
                         Color c = new Color(255, 127, 127);
                         rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, c);
-                    }
-                    else{
-                        rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.BLACK);           
+                    } else {
+                        rowfont = FontFactory.getFont(FontFactory.TIMES_ROMAN, 8, Color.BLACK);
                     }
                     String paragraph = "";
-                    if(jTable1.getModel().getValueAt(rows, cols) != null){
+                    if (jTable1.getModel().getValueAt(rows, cols) != null) {
                         paragraph = jTable1.getModel().getValueAt(rows, cols).toString();
                     }
                     col = new Paragraph(paragraph, rowfont);
-                    
+
                     PdfPCell row_items = new PdfPCell(col);
                     row_items.setColspan(3);
                     row_items.setBorder(PdfPCell.NO_BORDER);
@@ -3224,42 +3231,42 @@ private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
             retval = false;
         }
-     return retval;
-}
-       
-    public boolean ExportAccess(String path){
+        return retval;
+    }
+
+    public boolean ExportAccess(String path) {
         boolean retval = false;
         try {
             File file = new File(path);
             Database db = new DatabaseBuilder(file)
-            .setFileFormat(Database.FileFormat.V2010)
-            .create();
-            
+                    .setFileFormat(Database.FileFormat.V2010)
+                    .create();
+
             Table newTable = new TableBuilder("SSDAC Event logs")
-                .addColumn(new ColumnBuilder("Stn Name").setSQLType(Types.VARCHAR))
-                .addColumn(new ColumnBuilder("DP Point").setSQLType(Types.VARCHAR))
-                .addColumn(new ColumnBuilder("CPU Addrs").setSQLType(Types.INTEGER))
-                .addColumn(new ColumnBuilder("Event ID").setSQLType(Types.INTEGER))
-                .addColumn(new ColumnBuilder("Description").setSQLType(Types.VARCHAR))
-                .addColumn(new ColumnBuilder("Date and time").setSQLType(Types.VARCHAR))
-                .addColumn(new ColumnBuilder("Local Forward").setSQLType(Types.INTEGER))
-                .addColumn(new ColumnBuilder("Remote Forward").setSQLType(Types.INTEGER))
-                .addColumn(new ColumnBuilder("Local Reverse").setSQLType(Types.INTEGER))
-                .addColumn(new ColumnBuilder("Remote Reverse").setSQLType(Types.INTEGER)).toTable(db);
-            
+                    .addColumn(new ColumnBuilder("Stn Name").setSQLType(Types.VARCHAR))
+                    .addColumn(new ColumnBuilder("DP Point").setSQLType(Types.VARCHAR))
+                    .addColumn(new ColumnBuilder("CPU Addrs").setSQLType(Types.INTEGER))
+                    .addColumn(new ColumnBuilder("Event ID").setSQLType(Types.INTEGER))
+                    .addColumn(new ColumnBuilder("Description").setSQLType(Types.VARCHAR))
+                    .addColumn(new ColumnBuilder("Date and time").setSQLType(Types.VARCHAR))
+                    .addColumn(new ColumnBuilder("Local Forward").setSQLType(Types.INTEGER))
+                    .addColumn(new ColumnBuilder("Remote Forward").setSQLType(Types.INTEGER))
+                    .addColumn(new ColumnBuilder("Local Reverse").setSQLType(Types.INTEGER))
+                    .addColumn(new ColumnBuilder("Remote Reverse").setSQLType(Types.INTEGER)).toTable(db);
+
             LinkedList<EventDetails> ed = sharedData.get_logged_events();
-            for(int i=0;i<ed.size();i++){
+            for (int i = 0; i < ed.size(); i++) {
                 newTable.addRow(ed.get(i).Station_Name,
-                                ed.get(i).DP_Point,
-                                ed.get(i).CPU_Addrs,
-                                ed.get(i).event_ID,
-                                get_event_desc(ed.get(i).event_ID),
-                                ed.get(i).date_time,
-                                ed.get(i).Count1,
-                                ed.get(i).Count2,
-                                ed.get(i).Count3,
-                                ed.get(i).Count4);
-            }  
+                        ed.get(i).DP_Point,
+                        ed.get(i).CPU_Addrs,
+                        ed.get(i).event_ID,
+                        get_event_desc(ed.get(i).event_ID),
+                        ed.get(i).date_time,
+                        ed.get(i).Count1,
+                        ed.get(i).Count2,
+                        ed.get(i).Count3,
+                        ed.get(i).Count4);
+            }
             db.close();
             retval = true;
         } catch (SQLException ex) {
@@ -3271,184 +3278,188 @@ private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
         return retval;
     }
-      public void ExportExcel(){
-        
+
+    public void ExportExcel() {
+
         JFileChooser fileDialog = new JFileChooser();
         fileDialog.setDialogType(JFileChooser.SAVE_DIALOG);
-        ExtensionFileFilter filter1 =  new ExtensionFileFilter("Excel (XLS File)", new String[] {"Xls"});
-        fileDialog.setFileFilter (filter1);
+        ExtensionFileFilter filter1 = new ExtensionFileFilter("Excel (XLS File)", new String[]{"Xls"});
+        fileDialog.setFileFilter(filter1);
         fileDialog.setSelectedFile(new File(sharedData.getDate()));
         fileDialog.setFileSelectionMode(JFileChooser.FILES_ONLY);
         int status = fileDialog.showSaveDialog(null);
 
         fileDialog.setVisible(true);
-        if(status == fileDialog.CANCEL_OPTION)
+        if (status == fileDialog.CANCEL_OPTION) {
             return;
-        String directory= fileDialog.getSelectedFile().getParent();
-
-        String fileName=fileDialog.getSelectedFile().getName();
-
-        if(directory!=null){
-
-        directory=directory.replace(File.separatorChar, '\\');
-
-        fileName=fileName.replace(File.separatorChar, '\\');
-
-        String fullPath = directory + "\\"+fileName;
-        controlAllButtons(false);
-        GiveResponse("Exporting to excel sheet...", Color.BLACK);
-        if(!fullPath.toLowerCase().contains(".xls")){
-            fullPath=fullPath.concat(".xls");
         }
-        fullPath = fullPath.replace("\\", "/");
-        WriteToExcel excel_writer = new WriteToExcel();
-        if(excel_writer.exportExcelFile(fullPath)==false){
-            JOptionPane.showMessageDialog(EventLoggerApp.getApplication().getView().getFrame(), "Failed to create excel file.","Error",  JOptionPane.ERROR_MESSAGE);
-        }
-        else {
+        String directory = fileDialog.getSelectedFile().getParent();
+
+        String fileName = fileDialog.getSelectedFile().getName();
+
+        if (directory != null) {
+
+            directory = directory.replace(File.separatorChar, '\\');
+
+            fileName = fileName.replace(File.separatorChar, '\\');
+
+            String fullPath = directory + "\\" + fileName;
+            controlAllButtons(false);
+            GiveResponse("Exporting to excel sheet...", Color.BLACK);
+            if (!fullPath.toLowerCase().contains(".xls")) {
+                fullPath = fullPath.concat(".xls");
+            }
             fullPath = fullPath.replace("\\", "/");
-            fullPath = fullPath.replace("//", "/");
-            if(!fullPath.endsWith(".xls")) fullPath = fullPath.concat(".xls");
-            GiveResponse("Excelsheet file successfully created at "+ fullPath, Color.BLUE);
-        }
-         controlAllButtons(true);
+            WriteToExcel excel_writer = new WriteToExcel();
+            if (excel_writer.exportExcelFile(fullPath) == false) {
+                JOptionPane.showMessageDialog(EventLoggerApp.getApplication().getView().getFrame(), "Failed to create excel file.", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                fullPath = fullPath.replace("\\", "/");
+                fullPath = fullPath.replace("//", "/");
+                if (!fullPath.endsWith(".xls")) {
+                    fullPath = fullPath.concat(".xls");
+                }
+                GiveResponse("Excelsheet file successfully created at " + fullPath, Color.BLUE);
+            }
+            controlAllButtons(true);
         }
     }
-      
-    private void UpdateStatusPanel(){
-       unit_type_txt ="";
-       switch(this.unit_type){
+
+    private void UpdateStatusPanel() {
+        unit_type_txt = "";
+        switch (this.unit_type) {
             case 0:
-            unit_type_txt = "DE";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Count","Total Wheels"};
-            break;
-                
+                unit_type_txt = "DE";
+                tableColumns = new String[]{"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "Local Count", "Total Wheels"};
+                break;
+
             case 1:
-            unit_type_txt = "SF";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Local Reverse", "Remote Forward","Remote Reverse","Total Wheels"};
-            break;
-                
+                unit_type_txt = "SF";
+                tableColumns = new String[]{"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "Local Forward", "Local Reverse", "Remote Forward", "Remote Reverse", "Total Wheels"};
+                break;
+
             case 2:
-            unit_type_txt = "EF";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Local Forward","Local Reverse", "Remote Forward","Remote Reverse","Total Wheels"};
-            break;
-                
+                unit_type_txt = "EF";
+                tableColumns = new String[]{"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "Local Forward", "Local Reverse", "Remote Forward", "Remote Reverse", "Total Wheels"};
+                break;
+
             case 3:
-            unit_type_txt = "CF";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","SF Count","S-CF Count","E-CF Count","EF Count","Total Wheels"};
-            break;
-                
+                unit_type_txt = "CF";
+                tableColumns = new String[]{"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "SF Count", "S-CF Count", "E-CF Count", "EF Count", "Total Wheels"};
+                break;
+
             case 4:
-            unit_type_txt = "3D1S-3A";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","NA","Total Wheels"};
-            break;
-                
+                unit_type_txt = "3D1S-3A";
+                tableColumns = new String[]{"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "Unit A", "Unit B", "Unit C", "NA", "Total Wheels"};
+                break;
+
             case 5:
-            unit_type_txt = "3D1S-3B";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Total Wheels"};
-            
-            break;
-                
+                unit_type_txt = "3D1S-3B";
+                tableColumns = new String[]{"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "Unit A", "Unit B", "Unit C", "Total Wheels"};
+
+                break;
+
             case 6:
-            unit_type_txt = "3D1S-3C";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Total Wheels"};
-            break;
-            
+                unit_type_txt = "3D1S-3C";
+                tableColumns = new String[]{"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "Unit A", "Unit B", "Unit C", "Total Wheels"};
+                break;
+
             case 7:
-            unit_type_txt = "3D-SF";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","SF Count","S-CF Count","S-EF Count","EF Count","Total Wheels"};
-            break;
-                
+                unit_type_txt = "3D-SF";
+                tableColumns = new String[]{"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "SF Count", "S-CF Count", "S-EF Count", "EF Count", "Total Wheels"};
+                break;
+
             case 8:
-            unit_type_txt = "3D-EF";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","SF Count","S-CF Count","E-SF Count","EF Count","Total Wheels"};
-            break;
-                
+                unit_type_txt = "3D-EF";
+                tableColumns = new String[]{"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "SF Count", "S-CF Count", "E-SF Count", "EF Count", "Total Wheels"};
+                break;
+
             case 9:
-            unit_type_txt = "LCWS";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Sensor A","Sensor B","Sensor C","Sensor D","Total Wheels"};
-            break;
-                
+                unit_type_txt = "LCWS";
+                tableColumns = new String[]{"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "Sensor A", "Sensor B", "Sensor C", "Sensor D", "Total Wheels"};
+                break;
+
             case 10:
-            unit_type_txt = "LCWS - DL";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Sensor A","Sensor B","Sensor C","Sensor D","Total Wheels"};
-            break;
-                    
+                unit_type_txt = "LCWS - DL";
+                tableColumns = new String[]{"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "Sensor A", "Sensor B", "Sensor C", "Sensor D", "Total Wheels"};
+                break;
+
             case 11:
-            unit_type_txt = "4D1S - A";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Wheels"};
-            
-            break;
-                        
+                unit_type_txt = "4D1S - A";
+                tableColumns = new String[]{"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "Unit A", "Unit B", "Unit C", "Unit D", "Total Wheels"};
+
+                break;
+
             case 12:
-            unit_type_txt = "4D1S - B";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Wheels"};            
-            break;
-                
+                unit_type_txt = "4D1S - B";
+                tableColumns = new String[]{"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "Unit A", "Unit B", "Unit C", "Unit D", "Total Wheels"};
+                break;
+
             case 13:
-            unit_type_txt = "4D1S - C";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Wheels"};            
-            break;
-                    
+                unit_type_txt = "4D1S - C";
+                tableColumns = new String[]{"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "Unit A", "Unit B", "Unit C", "Unit D", "Total Wheels"};
+                break;
+
             case 14:
-            unit_type_txt = "4D1S - D";
-            tableColumns = new String[]{"Stn Name","DP Point","CPU Addrs", "Event ID","Description" , "Date and time","Unit A","Unit B","Unit C","Unit D","Total Wheels"};
-            break;
-       }
-       networkIDField.setText(Network_ID);
-       dpField.setText(unit_type_txt);
-       jTextField4.setText(Long.toString(this.cpu_Addrs,10));     
-       GiveResponse("Updated the DAC status", Color.BLUE);
+                unit_type_txt = "4D1S - D";
+                tableColumns = new String[]{"Stn Name", "DP Point", "CPU Addrs", "Event ID", "Description", "Date and time", "Unit A", "Unit B", "Unit C", "Unit D", "Total Wheels"};
+                break;
+        }
+        networkIDField.setText(Network_ID);
+        dpField.setText(unit_type_txt);
+        jTextField4.setText(Long.toString(this.cpu_Addrs, 10));
+        GiveResponse("Updated the DAC status", Color.BLUE);
     }
-     public boolean com_connect(){
+
+    public boolean com_connect() {
         boolean retval = false;
 //        try {
-                sh.disconnect();
-                controlAllButtons(false);
-                sharedData.connected = false;
-                String[] ports = sh.getSerialPorts();
+        sh.disconnect();
+        controlAllButtons(false);
+        sharedData.connected = false;
+        String[] ports = sh.getSerialPorts();
 //                if(ports.length==0){
 //                    JOptionPane.showMessageDialog(this.getFrame(), "The Train Simulator hardware was not found. \nIf the hardware is already connected, please try unplugging and replugging again!", "Re-Plug",
 //                JOptionPane.WARNING_MESSAGE);
 //                }
-                for(int p = 0; p< ports.length;p++){
-                GiveResponse("Connecting to port for the first time. Please wait...", Color.blue);
-                try{
-                if(sh.connect(ports[p], 9600)){
+        for (int p = 0; p < ports.length; p++) {
+            GiveResponse("Connecting to port for the first time. Please wait...", Color.blue);
+            try {
+                if (sh.connect(ports[p], 9600)) {
                     DataFrame df = new DataFrame();
                     df.CMD = GET_DAC_STATUS;
                     df.CPU_address = 0x55;
                     df.data = new byte[0];
-                    if(SendPacketRecieveResponse(df)){
-                     sharedData.connected = true;
-                     sharedData.connectedToHardware = true;
-                     retval =  true;
-                     break;
-                    }else{
+                    if (SendPacketRecieveResponse(df)) {
+                        sharedData.connected = true;
+                        sharedData.connectedToHardware = true;
+                        retval = true;
+                        break;
+                    } else {
 //                        retval = false;
-                    }                    
-                } 
-                }catch(IOException ex){
-                    
+                    }
                 }
-                }
-                if(sharedData.connected==false){
-                    JOptionPane.showMessageDialog(null, "The event download hardware was not found. \nIf the hardware is already connected, please try unplugging and replugging again!", "Re-Plug",
-                JOptionPane.WARNING_MESSAGE);
-                }
-                
+            } catch (IOException ex) {
+
+            }
+        }
+        if (sharedData.connected == false) {
+            JOptionPane.showMessageDialog(null, "The event download hardware was not found. \nIf the hardware is already connected, please try unplugging and replugging again!", "Re-Plug",
+                    JOptionPane.WARNING_MESSAGE);
+        }
+
 //        } catch (IOException ex) {
 //            retval = false;
 //            sharedData.connected = false;
 //            GiveResponse("Port was not found or in use...", Color.red);
 //        }
-                controlAllButtons(true);
+        controlAllButtons(true);
         return retval;
     }
-     
-      /**
+
+    /**
      * Returns a sample dataset.
-     * 
+     *
      * @return The dataset.
      */
     private XYDataset createDataset() {
@@ -3457,64 +3468,63 @@ private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         dataset.addSeries(time_series_down_time);
         return dataset;
     }
-    
+
     /**
      * Creates a sample chart.
-     * 
-     * @param dataset  the dataset.
-     * 
+     *
+     * @param dataset the dataset.
+     *
      * @return The chart.
      */
     private JFreeChart createChart(XYDataset dataset) {
-        
+
         // create the chart...
         final JFreeChart chart = ChartFactory.createXYLineChart(
-         "SSDAC System Availability",
-         "Days" ,
-         "Hours" ,
-         dataset,
-         PlotOrientation.VERTICAL ,
-         true , true , false);
+                "SSDAC System Availability",
+                "Days",
+                "Hours",
+                dataset,
+                PlotOrientation.VERTICAL,
+                true, true, false);
 
-         ChartPanel chartPanel = new ChartPanel( chart );
-      chartPanel.setPreferredSize( new java.awt.Dimension( 560 , 367 ) );
-      final XYPlot plot = chart.getXYPlot( );
-      DateAxis dateAxis = new DateAxis();
-        dateAxis.setDateFormatOverride(new SimpleDateFormat("dd-MMM-yyyy")); 
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(560, 367));
+        final XYPlot plot = chart.getXYPlot();
+        DateAxis dateAxis = new DateAxis();
+        dateAxis.setDateFormatOverride(new SimpleDateFormat("dd-MMM-yyyy"));
         plot.setDomainAxis(dateAxis);
 //      NumberAxis domain = (NumberAxis) plot.getDomainAxis();
         NumberAxis range = (NumberAxis) plot.getRangeAxis();
 //        range.setRange(0.0, 1.0);
         range.setRangeType(RangeType.POSITIVE);
-        
+
 //        range.setTickUnit(new NumberTickUnit(24.0));
-        
 //      XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer( );
         UpTimeToolTipGenerator tooltipgen_up_time = new UpTimeToolTipGenerator();
         DownTimeToolTipGenerator tooltipgen_down_time = new DownTimeToolTipGenerator();
-      XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+        XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
 //        renderer.setLegendItemToolTipGenerator(tooltipgen);
-      renderer.setSeriesToolTipGenerator(0, tooltipgen_up_time);
-      renderer.setSeriesToolTipGenerator(1, tooltipgen_down_time);
-      renderer.setSeriesPaint( 0 , Color.BLUE );
-      renderer.setSeriesPaint( 1 , Color.RED );
+        renderer.setSeriesToolTipGenerator(0, tooltipgen_up_time);
+        renderer.setSeriesToolTipGenerator(1, tooltipgen_down_time);
+        renderer.setSeriesPaint(0, Color.BLUE);
+        renderer.setSeriesPaint(1, Color.RED);
 //      renderer.setSeriesPaint( 1 , Color.GREEN );
 //      renderer.setSeriesPaint( 2 , Color.YELLOW );
 //      renderer.setSeriesStroke( 0 , new BasicStroke( 2.0f ) );
 //      renderer.setSeriesStroke( 1 , new BasicStroke( 3.0f ) );
 //      renderer.setSeriesStroke( 2 , new BasicStroke( 2.0f ) );
-       renderer.setSeriesShape(0, new java.awt.Rectangle(-2, -2, 4, 4));
-       renderer.setSeriesShape(1, new java.awt.Rectangle(-2, -2, 4, 4));
+        renderer.setSeriesShape(0, new java.awt.Rectangle(-2, -2, 4, 4));
+        renderer.setSeriesShape(1, new java.awt.Rectangle(-2, -2, 4, 4));
         renderer.setSeriesShapesVisible(0, true);
         renderer.setSeriesShapesVisible(1, true);
         renderer.setShapesFilled(true);
-      plot.setRenderer( renderer ); 
+        plot.setRenderer(renderer);
 //      setContentPane( chartPanel ); 
         return chart;
-        
+
     }
-    
-     
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtnConnect;
     private javax.swing.JButton BtnDownloadEvents;

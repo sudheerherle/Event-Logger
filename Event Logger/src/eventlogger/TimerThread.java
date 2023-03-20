@@ -11,11 +11,11 @@ import java.util.TimerTask;
  *
  * @author I14746
  */
-public class TimerThread extends TimerTask{
+public class TimerThread extends TimerTask {
 
     @Override
     public void run() {
         SharedData.getSingletonObject().time_out = true;
     }
-    
+
 }

@@ -12,17 +12,18 @@ import org.jdesktop.application.SingleFrameApplication;
  *
  * @author i14746
  */
-public class UpdateRTCTime extends EventLoggerView implements Runnable{
+public class UpdateRTCTime extends EventLoggerView implements Runnable {
 
     EventLoggerView view = this;
+
     public UpdateRTCTime(SingleFrameApplication app) {
         super(app);
         EventLoggerApp as = (EventLoggerApp) app;
         view = as.getView();
     }
-   
+
     public void run() {
-       view.UpdateRTC();
+        view.UpdateRTC();
     }
-    
+
 }

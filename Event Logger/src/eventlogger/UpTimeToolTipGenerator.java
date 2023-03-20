@@ -14,16 +14,16 @@ import org.jfree.data.xy.XYDataset;
  *
  * @author I14746
  */
-public class UpTimeToolTipGenerator implements XYToolTipGenerator 
-   { 
+public class UpTimeToolTipGenerator implements XYToolTipGenerator {
+
     SharedData sharedData = SharedData.getSingletonObject();
-       public String generateToolTip(XYDataset xyDataset, int series, int item) 
-          { 
-             SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
-             Number x = xyDataset.getX(series, item);
-             Number y = xyDataset.getY(series, item);
-             String ret = "Date: "+sdf.format(x);
-             ret = ret + " | MUT: "+ sharedData.getDuration(y.longValue() * 3600);
-             return ret;
-          }
-   }
+
+    public String generateToolTip(XYDataset xyDataset, int series, int item) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
+        Number x = xyDataset.getX(series, item);
+        Number y = xyDataset.getY(series, item);
+        String ret = "Date: " + sdf.format(x);
+        ret = ret + " | MUT: " + sharedData.getDuration(y.longValue() * 3600);
+        return ret;
+    }
+}

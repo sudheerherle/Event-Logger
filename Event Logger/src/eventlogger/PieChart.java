@@ -15,24 +15,24 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.PiePlot3D;
 import org.jfree.data.general.DefaultPieDataset;
-import org.jfree.ui.ApplicationFrame;
-import org.jfree.ui.RefineryUtilities;
 
 /**
  * A demo showing four pie charts.
  */
-public class PieChart{
+public class PieChart {
 
     private String title = "";
+
     /**
      * Creates a new demo instance.
-     * 
-     * @param title  the frame title.
+     *
+     * @param title the frame title.
      */
-    
-    public PieChart(String title){
+
+    public PieChart(String title) {
         this.title = title;
     }
+
     public JPanel PieChart(String title) {
 
         //super(title);
@@ -42,7 +42,7 @@ public class PieChart{
         dataset.setValue("Section 2", 56.5);
         dataset.setValue("Section 3", 43.3);
         dataset.setValue("Section 4", 11.1);
-        
+
         JFreeChart chart1 = ChartFactory.createPieChart("Chart 1", dataset, false, false, false);
         JFreeChart chart2 = ChartFactory.createPieChart("Chart 2", dataset, false, false, false);
         PiePlot plot2 = (PiePlot) chart2.getPlot();
@@ -64,17 +64,5 @@ public class PieChart{
         return panel;
 
     }
-
-//    /**
-//     * The starting point for the demo.
-//     * 
-//     * @param args  ignored.
-//     */
-//    public static void main(String[] args) {
-//        PieChartDemo7 demo = new PieChartDemo7("Pie Chart Demo 7");
-//        demo.pack();
-//        RefineryUtilities.centerFrameOnScreen(demo);
-//        demo.setVisible(true);
-//    }
 
 }

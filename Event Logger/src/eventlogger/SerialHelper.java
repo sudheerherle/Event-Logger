@@ -1,9 +1,5 @@
 package eventlogger;
 
-
-
-
-
 import eventlogger.common.SharedData;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -17,7 +13,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Enumeration;
 
-public class SerialHelper implements Runnable , SerialPortEventListener {
+public class SerialHelper implements Runnable, SerialPortEventListener {
 
     private SerialPort serialPort;
     SharedData shareddata = SharedData.getSingletonObject();
@@ -29,7 +25,6 @@ public class SerialHelper implements Runnable , SerialPortEventListener {
     final static int DASH_ASCII = 45;
     final static int NEW_LINE_ASCII = 10;
     Thread readThread;
-    
 
     public String[] getSerialPorts() {
         Enumeration ports = CommPortIdentifier.getPortIdentifiers();
@@ -115,7 +110,7 @@ public class SerialHelper implements Runnable , SerialPortEventListener {
             // Set serial port to 9600-8N1
             if (serialPort != null) {
                 serialPort.setSerialPortParams(baudRate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-              //  serialPort.setFlowControlMode(SerialPort.);
+                //  serialPort.setFlowControlMode(SerialPort.);
                 serialPort.setRTS(true);
                 serialPort.setDTR(true);
                 serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN);
@@ -149,88 +144,73 @@ public class SerialHelper implements Runnable , SerialPortEventListener {
         return comPort;
     }
 
-    public void writeData(byte[] data)
-    {
-     try
-     {
-         outStream.write(data);
-     }
-     catch(Exception ex)
-     {
-         System.err.println("Exception in writedata");
-     }
-    }
-        public void writeData(byte data)
-    {
-     try
-     {
-         outStream.write(data);
-         outStream.flush();
-     }
-     catch(Exception ex)
-     {
-         System.err.println("Exception in writedata");
-     }
-    }
-        
-        public byte read()
-        {
-            byte ret= 0;
-          int data;
-          try
-          {
-          data= inStream.read();
-          ret =(byte)data;
-          }
-          catch(Exception ex)
-          {
-             
-          }
-          return ret;
+    public void writeData(byte[] data) {
+        try {
+            outStream.write(data);
+        } catch (Exception ex) {
+            System.err.println("Exception in writedata");
         }
-        
-         public void run() {
-            }
+    }
+
+    public void writeData(byte data) {
+        try {
+            outStream.write(data);
+            outStream.flush();
+        } catch (Exception ex) {
+            System.err.println("Exception in writedata");
+        }
+    }
+
+    public byte read() {
+        byte ret = 0;
+        int data;
+        try {
+            data = inStream.read();
+            ret = (byte) data;
+        } catch (Exception ex) {
+
+        }
+        return ret;
+    }
+
+    public void run() {
+    }
+
     //what happens when data is received
     //pre: serial event is triggered
     //post: processing on the data it reads
     public void serialEvent(SerialPortEvent evt) {
         int data;
-        switch(evt.getEventType())
-        {
-        case SerialPortEvent.OUTPUT_BUFFER_EMPTY:
-        break;
-        case SerialPortEvent.DATA_AVAILABLE:
-            try
-            {
+        switch (evt.getEventType()) {
+            case SerialPortEvent.OUTPUT_BUFFER_EMPTY:
+                break;
+            case SerialPortEvent.DATA_AVAILABLE:
+            try {
 //            try {
 //                Thread.sleep(5000);
 //            } catch (InterruptedException ex) {
 //                Logger.getLogger(SerialHelper.class.getName()).log(Level.SEVERE, null, ex);
 //            }
                 int len = 0;
-               // buffer = new byte[inStream.available()];
-                while ( ( data = inStream.read()) > -1 )
-                {
+                // buffer = new byte[inStream.available()];
+                while ((data = inStream.read()) > -1) {
 //                    if ( data == '\n' ) {
 //                        break;
 //                    }
-                    
+
                     buffer[len++] = (byte) data;
                 }
-                byte[] recieved_data = new byte[len-1];//54216e57
-                System.arraycopy(buffer, 0, recieved_data, 0, len-1);
-                shareddata.dataRecieved(recieved_data);                
+                byte[] recieved_data = new byte[len - 1];//54216e57
+                System.arraycopy(buffer, 0, recieved_data, 0, len - 1);
+                shareddata.dataRecieved(recieved_data);
 //                shareddata.dataRecievedFlag = true;
-                
-                System.out.println("Recieved: "+Arrays.toString(recieved_data));
-            }
-            catch ( IOException e )
-            {
+
+                System.out.println("Recieved: " + Arrays.toString(recieved_data));
+            } catch (IOException e) {
                 e.printStackTrace();
                 System.exit(-1);
-            }   
-              break;
+            }
+            break;
         }
     }
 }
