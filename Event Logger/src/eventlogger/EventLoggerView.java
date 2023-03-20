@@ -3259,7 +3259,7 @@ private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 newTable.addRow(ed.get(i).Station_Name,
                         ed.get(i).DP_Point,
                         ed.get(i).CPU_Addrs,
-                        ed.get(i).event_ID,
+                        EventDescription.getAdjustedEventID(ed.get(i).event_ID),
                         get_event_desc(ed.get(i).event_ID),
                         ed.get(i).date_time,
                         ed.get(i).Count1,
@@ -3277,7 +3277,7 @@ private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             Logger.getLogger(EventLoggerView.class.getName()).log(Level.SEVERE, null, ex);
         }
         return retval;
-    }
+    }    
 
     public void ExportExcel() {
 

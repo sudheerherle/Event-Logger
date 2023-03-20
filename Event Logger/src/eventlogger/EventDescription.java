@@ -159,4 +159,150 @@ public enum EventDescription {
     public int getOrdinal() {
         return val;
     }
+    
+    public static int getAdjustedEventID(int eID) {
+        int adjustedEventID = eID;
+        switch (eID) {
+            case 2:
+                adjustedEventID = 13;
+                break;
+            case 71:
+                adjustedEventID = 0;
+                break;
+            case 94:
+                adjustedEventID = 1;
+                break;
+            case 67:
+                adjustedEventID = 2;
+                break;
+            case 69:
+                adjustedEventID = 3;
+                break;
+            case 85:
+                adjustedEventID = 4;
+                break;
+            case 87:
+                adjustedEventID = 5;
+                break;
+            case 81:
+                adjustedEventID = 6;
+                break;
+            case 83:
+                adjustedEventID = 7;
+                break;
+            case 107:
+                adjustedEventID = 14;
+                break;
+            case 99:
+                adjustedEventID = 16;
+                break;
+            case 100:
+                adjustedEventID = 17;
+                break;
+            case 101:
+                adjustedEventID = 18;
+                break;
+            case 102:
+                adjustedEventID = 19;
+                break;
+            case 103:
+                adjustedEventID = 20;
+                break;
+            case 104:
+                adjustedEventID = 21;
+                break;
+            case 105:
+                adjustedEventID = 22;
+                break;
+            case 106:
+                adjustedEventID = 23;
+                break;
+            case 13:
+                adjustedEventID = 24;
+                break;
+            case 15:
+                adjustedEventID = 25;
+                break;
+            case 17:
+                adjustedEventID = 27;
+                break;
+            case 19:
+                adjustedEventID = 28;
+                break;
+            case 21:
+                adjustedEventID = 29;
+                break;
+            case 23:
+                adjustedEventID = 30;
+                break;
+            case 25:
+                adjustedEventID = 31;
+                break;
+            case 79:
+                adjustedEventID = 34;
+                break;
+            case 77:
+                adjustedEventID = 35;
+                break;
+            case 96:
+                adjustedEventID = 36;
+                break;
+            case 97:
+                adjustedEventID = 37;
+                break;
+            case 119:
+                adjustedEventID = 38;
+                break;
+            case 27:
+                adjustedEventID = 40;
+                break;
+            case 29:
+                adjustedEventID = 41;
+                break;
+            case 31:
+                adjustedEventID = 42;
+                break;
+            case 33:
+                adjustedEventID = 43;
+                break;
+            case 43:
+                adjustedEventID = 44;
+                break;
+            case 45:
+                adjustedEventID = 45;
+                break;
+            case 47:
+                adjustedEventID = 46;
+                break;
+            case 49:
+                adjustedEventID = 47;
+                break;
+            case 35:
+                adjustedEventID = 48;
+                break;
+            case 37:
+                adjustedEventID = 49;
+                break;
+            case 39:
+                adjustedEventID = 50;
+                break;
+            case 41:
+                adjustedEventID = 51;
+                break;
+            case 51:
+                adjustedEventID = 52;
+                break;
+            case 53:
+                adjustedEventID = 53;
+                break;
+            case 57:
+                adjustedEventID = 54;
+                break;
+            case 59:
+                adjustedEventID = 55;
+                break;
+
+        }
+        return adjustedEventID;
+    }
 }
