@@ -303,6 +303,8 @@ public enum EventDescription {
                 break;
 
         }
+        System.out.println("Adjusted event id: "+ adjustedEventID);
+        System.out.println("Original event id: "+ eID);
         return adjustedEventID;
     }
 }
