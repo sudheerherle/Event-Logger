@@ -2451,7 +2451,7 @@ public class EventLoggerView extends FrameView {
                 } else {
                     StringToDisplay[2] = "CPU-" + Long.toString(ed.CPU_Addrs, 10);
                 }
-                StringToDisplay[3] = Long.toString(ed.event_ID);
+                StringToDisplay[3] = Long.toString(EventDescription.getAdjustedEventID(ed.event_ID));
                 String event_desc = get_event_desc(ed.event_ID);
                 StringToDisplay[4] = event_desc;
                 StringToDisplay[5] = ed.date_time;
