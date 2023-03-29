@@ -173,10 +173,10 @@ public enum EventDescription {
                 adjustedEventID = 1;
                 break;
             case 67:
-                adjustedEventID = 2;
+                adjustedEventID = 3;
                 break;
             case 69:
-                adjustedEventID = 3;
+                adjustedEventID = 2;
                 break;
             case 85:
                 adjustedEventID = 4;
@@ -303,8 +303,8 @@ public enum EventDescription {
                 break;
 
         }
-        System.out.println("Adjusted event id: "+ adjustedEventID);
-        System.out.println("Original event id: "+ eID);
+//        System.out.println("Adjusted event id: "+ adjustedEventID);
+//        System.out.println("Original event id: "+ eID);
         return adjustedEventID;
     }
 }
