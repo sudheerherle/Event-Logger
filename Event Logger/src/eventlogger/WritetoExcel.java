@@ -111,6 +111,7 @@ class WriteToExcel {
                 retval = retval.replace("___", "<");
                 retval = retval.replace("MODEM BOARD MISSING1", "MODEM BOARD MISSING");
                 retval = retval.replace("MODEM BOARD FOUND1", "MODEM BOARD FOUND");
+                retval = retval.replace(" AT ", " at ");
             }
         }
         return retval;

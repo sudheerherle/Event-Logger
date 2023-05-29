@@ -2693,6 +2693,7 @@ public class EventLoggerView extends FrameView {
                 retval = retval.replace("MODEM BOARD MISSING1", "MODEM BOARD MISSING");
                 retval = retval.replace("MODEM BOARD FOUND1", "MODEM BOARD FOUND");
                 retval = getCapCorrected(retval);
+                retval = retval.replace(" AT ", " at ");
             }
         }
         return retval;
